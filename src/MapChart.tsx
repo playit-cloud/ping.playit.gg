@@ -8,6 +8,11 @@ import {
   type ProjectionConfig
 } from "react-simple-maps";
 
+import { darken, lighten, mix } from "polished";
+
+import datacenters from "./datacenters.json";
+import { useEffect, useState } from "react";
+
 const geoUrl = "/features.json";
 
 function lerpProjectionConfig(configA: ProjectionConfig, configB: ProjectionConfig, t: number): ProjectionConfig {
@@ -73,7 +78,7 @@ function getProjectionConfigForPoints(pointA: [number, number], pointB: [number,
   // Heuristic: scale inversely proportional to the span, with a base scale
   // These numbers may need tuning for your map size and projection
   const baseScale = 1100;
-  const scale = Math.max(300, baseScale * (60 / (maxSpan + 1))) * 0.8;
+  const scale = Math.max(300, baseScale * (60 / (maxSpan + 1))) * 0.3;
 
   // To keep the equator horizontal, set the second value of rotate (latitude) to 0
   // Set center to the midpoint to ensure both points are centered
@@ -139,14 +144,14 @@ const northAmericaGeoIds = [
 ];
 
 const latinAmericaGeoIds = [
-//   "DOM", // Dominican Republic
-//   "HND", // Honduras
-//   "NIC", // Nicaragua
-//   "SLV", // El Salvador
-//   "GTM", // Guatemala
-//   "PAN", // Panama
-//   "CRI", // Costa Rica
-//   "CUB", // Cuba
+  //   "DOM", // Dominican Republic
+  //   "HND", // Honduras
+  //   "NIC", // Nicaragua
+  //   "SLV", // El Salvador
+  //   "GTM", // Guatemala
+  //   "PAN", // Panama
+  //   "CRI", // Costa Rica
+  //   "CUB", // Cuba
 
   "ARG", // Argentina
   "BOL", // Bolivia
@@ -163,39 +168,154 @@ const latinAmericaGeoIds = [
   "GUF", // French Guiana
 ];
 
-// List of US cities with their GPS coordinates
-const usCities = [
-  { name: "New York", coordinates: [-74.006, 40.7128] },
-  { name: "Los Angeles", coordinates: [-118.2437, 34.0522] },
-  { name: "Chicago", coordinates: [-87.6298, 41.8781] },
-  { name: "Houston", coordinates: [-95.3698, 29.7604] },
-  { name: "Phoenix", coordinates: [-112.074, 33.4484] },
-  { name: "Philadelphia", coordinates: [-75.1652, 39.9526] },
-  { name: "San Antonio", coordinates: [-98.4936, 29.4241] },
-  { name: "San Diego", coordinates: [-117.1611, 32.7157] },
-  { name: "Dallas", coordinates: [-96.797, 32.7767] },
-  { name: "San Jose", coordinates: [-121.8863, 37.3382] }
+const indiaGeoIds = [
+  "IND", // India
+  "BGD", // Bangladesh
 ];
 
-const MapChart = () => {
-    const points = [
-      usCities[5].coordinates as [number, number],
-      usCities[1].coordinates as [number, number],
-    ];
+const asiaGeoIds = [
+  "JPN", // Japan
+  "KOR", // South Korea
+  "AUS", // Australia
+  "NZL", // New Zealand
+  "IDN", // Indonesia
+  "PHL", // Philippines
+  "THA", // Thailand
+  "VNM", // Vietnam
+  "MYS", // Malaysia
+  "SGP", // Singapore
+  "PNG", // Papua New Guinea
+];
+
+const orangeColor = '#FF8329';
+const blueColor = '#308DFC';
+const grayColor = '#899aa8';
+const darkColor = '#212a33';
+const greenColor = '#0db97a';
+const redColor = '#D24A3B';
+
+const regionColors: Record<string, string> = {
+  europe: blueColor,
+  "north-america": orangeColor,
+  "south-america": redColor,
+  india: grayColor,
+  asia: greenColor,
+};
+
+export type Mode = {
+  type: "globe",
+  location: [number, number],
+} | {
+  type: "ping-global",
+  location: [number, number],
+  targetDcId: number | undefined,
+  latency: number,
+} | {
+  type: "ping-region",
+  region: "europe" | "north-america" | "south-america" | "india" | "asia",
+  location: [number, number],
+  targetDcId: number | undefined,
+} | {
+  type: "ping-between"
+  sourceDcId: number
+  targetDcId: number
+};
+
+const MapChart = ({ mode }: { mode: Mode }) => {
+
+  const sourceDcId = (mode.type === "ping-between") ?
+    datacenters.find(dc => dc.id === mode.sourceDcId) : datacenters.find(dc => dc.id === 42);
+
+  const targetDc = (mode.type === "ping-region" || mode.type === "ping-between") ?
+    datacenters.find(dc => dc.id === mode.targetDcId) : undefined;
+
+  const points = [
+    (sourceDcId?.location || [0, 0]) as [number, number],
+    (targetDc?.location || [0, 0]) as [number, number],
+  ];
+
+  const targetProjection = mode.type === "globe" ? undefined : getProjectionConfigForPoints(points[0], points[1]);
+
+  const [projectionStart, setProjectionStart] = useState<ProjectionConfig | undefined>(undefined);
+  const [projection, setProjection] = useState<ProjectionConfig | undefined>(undefined);
+
+  useEffect(() => {
+    if (!targetProjection) {
+      setProjectionStart(undefined);
+      setProjection(undefined);
+      return;
+    }
+
+    if (!projection) {
+      setProjectionStart(targetProjection);
+      setProjection(targetProjection);
+      return;
+    }
+
+    setProjectionStart(projection);
+
+    const stepSize = 0.25;
+
+    let t = stepSize;
+    const newProjection = lerpProjectionConfig(projection, targetProjection, t);
+    setProjection(newProjection);
+
+    let tid: number;
+
+    function updateAnimation() {
+      if (!projectionStart || !targetProjection) return;
+
+      t = Math.min(1.0, t + stepSize);
+      setProjection(lerpProjectionConfig(projectionStart, targetProjection, t));
+      if (t < 1) {
+        tid = setTimeout(updateAnimation, 10);
+      }
+    }
+
+    tid = setTimeout(updateAnimation, 10);
+    return () => clearTimeout(tid);
+  }, [targetProjection]);
+
   return (
     <ComposableMap
-    projection="geoAzimuthalEqualArea"
-    projectionConfig={getProjectionConfigForPoints(points[0], points[1])}
+      projection={mode.type === "globe" ? "geoEqualEarth" : "geoConicEquidistant"}
+      projectionConfig={projection}
     >
-      <Geographies geography={geoUrl} stroke="orange" strokeWidth={0.5}>
+      <Geographies geography={geoUrl} stroke={darken(0.2, orangeColor)} strokeWidth={0.5}>
         {({ geographies }) =>
           geographies.map((geo) => {
-            const isHighlighted = europeGeoIds.indexOf(geo.id) !== -1;
+            const europe = europeGeoIds.indexOf(geo.id) !== -1;
+            const northAmerica = northAmericaGeoIds.indexOf(geo.id) !== -1;
+            const latinAmerica = latinAmericaGeoIds.indexOf(geo.id) !== -1;
+            const india = indiaGeoIds.indexOf(geo.id) !== -1;
+            const asia = asiaGeoIds.indexOf(geo.id) !== -1;
+
+            let region;
+            if (europe) {
+              region = "europe";
+            } else if (northAmerica) {
+              region = "north-america";
+            } else if (latinAmerica) {
+              region = "south-america";
+            } else if (india) {
+              region = "india";
+            } else if (asia) {
+              region = "asia";
+            }
+
+            let color = "url('#lines')";
+            if (region) {
+              color = region ? regionColors[region] : "url('#lines')";
+              if (mode.type === "ping-region" && mode.region !== region) {
+                color = mix(0.5, color, darkColor);
+              }
+            }
+
             return (
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
-                fill={isHighlighted ? "orange" : "url('#lines')"}
+                fill={color}
                 onClick={() => console.log(geo.properties.name)}
               />
             );
@@ -203,27 +323,40 @@ const MapChart = () => {
         }
       </Geographies>
       <Line coordinates={points} stroke="#F53" strokeWidth={2} />
-      {/* Render orange circles for each US city */}
-      {/* Project city coordinates to SVG points using the map projection */}
-      {/* Project city coordinates to SVG points using the map projection */}
       <Geographies geography={geoUrl}>
         {({ projection }) => (
           <g>
-            {usCities.map((city) => {
-              const projected = projection(city.coordinates as [number, number]);
+            {datacenters.map((dc) => {
+              const projected = projection(dc.location as [number, number]);
               if (!projected) return null;
+
+              let color;
+              if (dc.region === "europe") {
+                color = blueColor;
+              } else if (dc.region === "north-america") {
+                color = orangeColor;
+              } else if (dc.region === "south-america") {
+                color = redColor;
+              } else if (dc.region === "india") {
+                color = grayColor;
+              } else if (dc.region === "asia") {
+                color = greenColor;
+              } else {
+                color = darkColor; // Default color for other regions
+              }
+
               const [cx, cy] = projected;
               return (
                 <circle
-                  key={city.name}
+                  key={dc.name}
                   cx={cx}
                   cy={cy}
                   r={5}
-                  fill="orange"
-                  stroke="#fff"
-                  strokeWidth={1}
+                  fill={darken(0.2, color)}
+                  stroke={lighten(0.3, color)}
+                  strokeWidth={1.5}
                 >
-                  <title>{city.name}</title>
+                  <title>{dc.name}</title>
                 </circle>
               );
             })}

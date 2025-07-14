@@ -1,0 +1,21 @@
+[
+  {"id": 19, "region": "asia", "name": "sydney-1", "location": [150.93332920967842,-33.76691004170151]},
+  {"id": 34, "region": "south-america", "name": "santiago-1", "location": [-70.66827163831574,-33.43032952564581]},
+  {"id": 20, "region": "south-america", "name": "sao-paulo-1", "location": [-46.58637823133386,-23.562189524660546]},
+  {"id": 28, "region": "india", "name": "mumbai-2", "location": [72.88666880079465,19.107503578348634]},
+  {"id": 33, "region": "india", "name": "delhi-1", "location": [77.15672933005733,28.66015590873483]},
+  {"id": 32, "region": "india", "name": "bangalore-1", "location": [77.61376959586156,12.975468026994934]},
+  {"id": 18, "region": "asia", "name": "singapore-1", "location": [103.83051077322702,1.3277254001758816]},
+  {"id": 16, "region": "asia", "name": "tokyo-1", "location": [139.41240264074682,35.76746133973248]},
+  {"id": 36, "region": "europe", "name": "frankfurt-2", "location": [8.613899978244735,50.12861148866451]},
+  {"id": 37, "region": "europe", "name": "madrid-2", "location": [-3.698420677872644,40.41415000976858]},
+  {"id": 38, "region": "europe", "name": "london-2", "location": [-0.09404995550022383,51.51360453195452]},
+  {"id": 39, "region": "europe", "name": "bucharest-1", "location": [26.10080721224773,44.44506091117097]},
+  {"id": 42, "region": "north-america", "name": "seattle-2", "location": [-122.3121966141084,47.61115553762082]},
+  {"id": 40, "region": "north-america", "name": "los-angeles-2", "location": [-118.0589046010653,34.03038111005251]},
+  {"id": 41, "region": "north-america", "name": "new-york-2", "location": [-73.95499265749402,40.705346369898976]},
+  {"id": 43, "region": "north-america", "name": "denver-1", "location": [-104.9924719671019,39.73958703133504]},
+  {"id": 44, "region": "north-america", "name": "dallas-3", "location": [-96.76178777245744,32.80534829033479]},
+  {"id": 45, "region": "north-america", "name": "miami-3", "location": [-80.21160716594312,25.80217441920667]},
+  {"id": 46, "region": "north-america", "name": "chicago-2", "location": [-87.668797707693,41.860245993813826]}
+]
