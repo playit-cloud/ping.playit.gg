@@ -4,14 +4,15 @@ import {
   Geography,
   Graticule,
   Line,
-  Sphere,
+  Marker,
   type ProjectionConfig
 } from "react-simple-maps";
 
 import { darken, lighten, mix } from "polished";
 
 import datacenters from "./datacenters.json";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { PingResult } from "./ping_tester";
 
 const geoUrl = "/features.json";
 
@@ -206,165 +207,197 @@ export type Mode = {
   type: "globe",
   location: [number, number],
 } | {
-  type: "ping-global",
-  location: [number, number],
-  targetDcId: number | undefined,
-  latency: number,
-} | {
   type: "ping-region",
-  region: "europe" | "north-america" | "south-america" | "india" | "asia",
   location: [number, number],
-  targetDcId: number | undefined,
+  target: PingResult,
 } | {
   type: "ping-between"
   sourceDcId: number
   targetDcId: number
 };
 
+function easeInOutCirc(x: number): number {
+return x < 0.5
+  ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2
+  : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
+}
+
+
 const MapChart = ({ mode }: { mode: Mode }) => {
-
-  const sourceDcId = (mode.type === "ping-between") ?
-    datacenters.find(dc => dc.id === mode.sourceDcId) : datacenters.find(dc => dc.id === 42);
-
-  const targetDc = (mode.type === "ping-region" || mode.type === "ping-between") ?
-    datacenters.find(dc => dc.id === mode.targetDcId) : undefined;
-
-  const points = [
-    (sourceDcId?.location || [0, 0]) as [number, number],
-    (targetDc?.location || [0, 0]) as [number, number],
+  let points = [
+    [0, 0] as [number, number],
+    [0, 0] as [number, number],
   ];
 
-  const targetProjection = mode.type === "globe" ? undefined : getProjectionConfigForPoints(points[0], points[1]);
+  if (mode.type === "ping-region") {
+    points[0][0] = mode.location[0];
+    points[0][1] = mode.location[1];
 
-  const [projectionStart, setProjectionStart] = useState<ProjectionConfig | undefined>(undefined);
+    const dc = datacenters.find((dc) => dc.id === mode.target.dc_id);
+    if (dc) {
+      points[1][0] = dc.location[0];
+      points[1][1] = dc.location[1];
+    }
+  }
+
+  const targetProjection = useMemo(() => {
+    return mode.type === "globe" ? {
+      rotate: [0.0 - mode.location[0], 0.0, 0.0],
+      center: [0, mode.location[1]],
+      scale: 1100 * 0.5, // Adjust scale for globe view
+  } as ProjectionConfig : getProjectionConfigForPoints(points[0], points[1]);
+  }, [mode.type, points[0][0], points[0][1], points[1][0], points[1][1], mode.type === "globe" && mode.location[0], mode.type === "globe" && mode.location[1]]);
+
+  const projectionStartRef = useRef<ProjectionConfig | undefined>(undefined);
   const [projection, setProjection] = useState<ProjectionConfig | undefined>(undefined);
 
   useEffect(() => {
     if (!targetProjection) {
-      setProjectionStart(undefined);
       setProjection(undefined);
       return;
     }
 
     if (!projection) {
-      setProjectionStart(targetProjection);
       setProjection(targetProjection);
       return;
     }
 
-    setProjectionStart(projection);
+    projectionStartRef.current = projection;
 
-    const stepSize = 0.25;
-
-    let t = stepSize;
-    const newProjection = lerpProjectionConfig(projection, targetProjection, t);
-    setProjection(newProjection);
+    const animationDuration = 0.25;
 
     let tid: number;
+    let start: number | undefined = undefined;
 
-    function updateAnimation() {
-      if (!projectionStart || !targetProjection) return;
+    function updateAnimation(msTime: number) {
+      if (!projectionStartRef.current || !targetProjection) return;
 
-      t = Math.min(1.0, t + stepSize);
-      setProjection(lerpProjectionConfig(projectionStart, targetProjection, t));
+      if (start === undefined) {
+        start = msTime;
+      }
+
+      const elapsed = msTime - start;
+
+      const t = Math.min(1.0, elapsed * 0.001 / animationDuration);
+      setProjection(lerpProjectionConfig(projectionStartRef.current, targetProjection, easeInOutCirc(t)));
       if (t < 1) {
-        tid = setTimeout(updateAnimation, 10);
+        tid = requestAnimationFrame(updateAnimation);
       }
     }
 
-    tid = setTimeout(updateAnimation, 10);
-    return () => clearTimeout(tid);
+    tid = requestAnimationFrame(updateAnimation);
+    return () => cancelAnimationFrame(tid);
   }, [targetProjection]);
 
   return (
     <ComposableMap
-      projection={mode.type === "globe" ? "geoEqualEarth" : "geoConicEquidistant"}
+      projection={mode.type === "globe" ? "geoConicEquidistant" : "geoConicEquidistant"}
       projectionConfig={projection}
+
+      width={800}
+      height={600}
+      style={{backgroundColor: "gray", width: "800px", height: "600px"}}
     >
       <Geographies geography={geoUrl} stroke={darken(0.2, orangeColor)} strokeWidth={0.5}>
-        {({ geographies }) =>
-          geographies.map((geo) => {
-            const europe = europeGeoIds.indexOf(geo.id) !== -1;
-            const northAmerica = northAmericaGeoIds.indexOf(geo.id) !== -1;
-            const latinAmerica = latinAmericaGeoIds.indexOf(geo.id) !== -1;
-            const india = indiaGeoIds.indexOf(geo.id) !== -1;
-            const asia = asiaGeoIds.indexOf(geo.id) !== -1;
+        {({ geographies, projection }) => (
+          <>
+          {
+            geographies.map((geo) => {
+              const europe = europeGeoIds.indexOf(geo.id) !== -1;
+              const northAmerica = northAmericaGeoIds.indexOf(geo.id) !== -1;
+              const latinAmerica = latinAmericaGeoIds.indexOf(geo.id) !== -1;
+              const india = indiaGeoIds.indexOf(geo.id) !== -1;
+              const asia = asiaGeoIds.indexOf(geo.id) !== -1;
 
-            let region;
-            if (europe) {
-              region = "europe";
-            } else if (northAmerica) {
-              region = "north-america";
-            } else if (latinAmerica) {
-              region = "south-america";
-            } else if (india) {
-              region = "india";
-            } else if (asia) {
-              region = "asia";
-            }
-
-            let color = "url('#lines')";
-            if (region) {
-              color = region ? regionColors[region] : "url('#lines')";
-              if (mode.type === "ping-region" && mode.region !== region) {
-                color = mix(0.5, color, darkColor);
-              }
-            }
-
-            return (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill={color}
-                onClick={() => console.log(geo.properties.name)}
-              />
-            );
-          })
-        }
-      </Geographies>
-      <Line coordinates={points} stroke="#F53" strokeWidth={2} />
-      <Geographies geography={geoUrl}>
-        {({ projection }) => (
-          <g>
-            {datacenters.map((dc) => {
-              const projected = projection(dc.location as [number, number]);
-              if (!projected) return null;
-
-              let color;
-              if (dc.region === "europe") {
-                color = blueColor;
-              } else if (dc.region === "north-america") {
-                color = orangeColor;
-              } else if (dc.region === "south-america") {
-                color = redColor;
-              } else if (dc.region === "india") {
-                color = grayColor;
-              } else if (dc.region === "asia") {
-                color = greenColor;
-              } else {
-                color = darkColor; // Default color for other regions
+              let region;
+              if (europe) {
+                region = "europe";
+              } else if (northAmerica) {
+                region = "north-america";
+              } else if (latinAmerica) {
+                region = "south-america";
+              } else if (india) {
+                region = "india";
+              } else if (asia) {
+                region = "asia";
               }
 
-              const [cx, cy] = projected;
+              let color = "url('#lines')";
+              if (region) {
+                color = region ? regionColors[region] : "url('#lines')";
+                if (mode.type === "ping-region" && mode.target.region !== region) {
+                  color = mix(0.5, color, darkColor);
+                }
+              }
+
               return (
-                <circle
-                  key={dc.name}
-                  cx={cx}
-                  cy={cy}
-                  r={5}
-                  fill={darken(0.2, color)}
-                  stroke={lighten(0.3, color)}
-                  strokeWidth={1.5}
-                >
-                  <title>{dc.name}</title>
-                </circle>
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill={color}
+                  onClick={() => console.log(geo.properties.name)}
+                />
               );
-            })}
-          </g>
-        )}
+            })
+          }
+
+          { mode.type != "globe" && <Line coordinates={points} stroke="#F53" strokeWidth={2} /> }
+
+          {datacenters.map((dc) => {
+            const projected = projection(dc.location as [number, number]);
+            if (!projected) return null;
+
+            let color;
+            if (dc.region === "europe") {
+              color = blueColor;
+            } else if (dc.region === "north-america") {
+              color = orangeColor;
+            } else if (dc.region === "south-america") {
+              color = redColor;
+            } else if (dc.region === "india") {
+              color = grayColor;
+            } else if (dc.region === "asia") {
+              color = greenColor;
+            } else {
+              color = darkColor; // Default color for other regions
+            }
+
+            const [cx, cy] = projected;
+            return (
+              <circle
+                key={dc.name}
+                cx={cx}
+                cy={cy}
+                r={5}
+                fill={darken(0.2, color)}
+                stroke={lighten(0.3, color)}
+                strokeWidth={1.5}
+              >
+                <title>{dc.name}</title>
+              </circle>
+            );
+          })}
+
+          {mode.type !== "ping-between" && <Marker coordinates={mode.location} fill={darkColor} stroke="#fff" strokeWidth={1}>
+            <g
+              fill="none"
+              stroke="rgba(56, 12, 12, 0.8)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              transform={`translate(${-12.0 * MARKER_SCALE}, ${-24 * MARKER_SCALE}) scale(${MARKER_SCALE})`}
+            >
+              <circle cx="12" cy="10" r="3" />
+              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
+            </g>
+          </Marker>}
+        </>
+      )}
       </Geographies>
     </ComposableMap>
   );
 };
+
+const MARKER_SCALE = 4.0;
 
 export default MapChart;
