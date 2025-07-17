@@ -15,54 +15,107 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
   text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  color: rgb(254, 136, 10);
+  margin-right: 5px;
 }
 
-body {
+a:hover {
+  color: rgb(191, 104, 10);
+  text-decoration: underline;
+}
+
+body, #root {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#root {
+  display: flex;
+  flex-direction: column;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+.header {
+  padding: 5px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: solid 2px rgb(254, 136, 10);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  height: 50px;
+}
+
+.header > button {
+  padding: 2px 10px;
+  background: rgb(254, 136, 10);
+  color: white;
+  font-weight: bold;
+  border-radius: 2px;
+  outline: none;
+  border: solid 2px rgb(254, 136, 10);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  font-size: 14px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.header > button:hover {
+  border-color: white;
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  padding-top: 2px;
+  max-height: calc(100vh - 50px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.content > .body {
+  flex-grow: 5;
+  min-width: 400px;
+  max-height: 745px;
+}
+
+.content > .details {
+  min-width: 250px;
+  flex-basis: 300px;
+  flex-grow: 1;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.details > .region {
+  width: 100%;
+  float: left;
+  background: rgb(43, 43, 43);
+  margin-bottom: 5px;
+  border-bottom: solid 2px rgb(139, 139, 139);
+  padding: 5px;
+}
+
+.details > .region.active {
+  background: rgb(71, 58, 46);
+}
+
+.region > .title {
+  font-weight: bold;
+}
+
+.region > .data {
+  font-size: 14px;
+}
+
+.attribute > span {
+  font-weight: bold;
+  color: rgb(148, 148, 148);
 }

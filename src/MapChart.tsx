@@ -296,7 +296,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
 
       width={800}
       height={600}
-      style={{backgroundColor: "gray", width: "800px", height: "600px"}}
+      style={{backgroundColor: "gray", width: "100%", height: "100%"}}
     >
       <Geographies geography={geoUrl} stroke={darken(0.2, orangeColor)} strokeWidth={0.5}>
         {({ geographies, projection }) => (
