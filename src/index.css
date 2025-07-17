@@ -61,6 +61,11 @@ body, #root {
   font-size: 14px;
 }
 
+button.stop {
+  background: rgb(223, 46, 46);
+  border-color: rgb(223, 46, 46);
+}
+
 .header > button:hover {
   border-color: white;
 }
@@ -105,6 +110,14 @@ body, #root {
 
 .details > .region.active {
   background: rgb(71, 58, 46);
+}
+
+.details > .region.selected {
+  background: rgb(58, 66, 113);
+}
+
+.details > .region.best {
+  background: rgb(46, 71, 49);
 }
 
 .region > .title {

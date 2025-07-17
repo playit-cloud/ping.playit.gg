@@ -190,7 +190,7 @@ const asiaGeoIds = [
 
 const orangeColor = '#FF8329';
 const blueColor = '#308DFC';
-const grayColor = '#899aa8';
+const grayColor = 'rgb(207, 41, 226)';
 const darkColor = '#212a33';
 const greenColor = '#0db97a';
 const redColor = '#D24A3B';
@@ -206,14 +206,18 @@ const regionColors: Record<string, string> = {
 export type Mode = {
   type: "globe",
   location: [number, number],
+  highlightedDcd?: number;
 } | {
   type: "ping-region",
   location: [number, number],
-  target: PingResult,
+  target: { dc_id: number; region: string; },
 } | {
   type: "ping-between"
   sourceDcId: number
   targetDcId: number
+} | {
+  type: "dc-focus",
+  dcId: number,
 };
 
 function easeInOutCirc(x: number): number {
@@ -221,7 +225,6 @@ return x < 0.5
   ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2
   : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
 }
-
 
 const MapChart = ({ mode }: { mode: Mode }) => {
   let points = [
@@ -241,12 +244,45 @@ const MapChart = ({ mode }: { mode: Mode }) => {
   }
 
   const targetProjection = useMemo(() => {
-    return mode.type === "globe" ? {
-      rotate: [0.0 - mode.location[0], 0.0, 0.0],
-      center: [0, mode.location[1]],
-      scale: 1100 * 0.5, // Adjust scale for globe view
-  } as ProjectionConfig : getProjectionConfigForPoints(points[0], points[1]);
-  }, [mode.type, points[0][0], points[0][1], points[1][0], points[1][1], mode.type === "globe" && mode.location[0], mode.type === "globe" && mode.location[1]]);
+    let singleGps: [number, number] | undefined = undefined;
+
+    if (mode.type === "globe") {
+      if (mode.highlightedDcd) {
+        const dc = datacenters.find(d => d.id === mode.highlightedDcd);
+        if (dc) {
+          return getProjectionConfigForPoints(
+            [mode.location[0], mode.location[1]],
+            dc.location as [number, number],
+          );
+        }
+      }
+      singleGps = [mode.location[0], mode.location[1]];
+    }
+    else if (mode.type === "dc-focus") {
+      const dc = datacenters.find(dc => dc.id === mode.dcId);
+      singleGps = dc?.location as [number, number] | undefined;
+    }
+
+    if (singleGps) {
+      return {
+        rotate: [0.0 - singleGps[0], 0.0, 0.0],
+        center: [0, singleGps[1]],
+        scale: 1100 * 0.5, // Adjust scale for globe view
+      } as ProjectionConfig;
+    }
+
+    return getProjectionConfigForPoints(points[0], points[1]);
+  }, [
+    mode.type,
+    points[0][0],
+    points[0][1],
+    points[1][0],
+    points[1][1],
+    mode.type === "globe" && mode.location[0],
+    mode.type === "globe" && mode.location[1],
+    mode.type === "globe" && mode.highlightedDcd,
+    mode.type === "dc-focus" && mode.dcId
+  ]);
 
   const projectionStartRef = useRef<ProjectionConfig | undefined>(undefined);
   const [projection, setProjection] = useState<ProjectionConfig | undefined>(undefined);
@@ -326,7 +362,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               if (region) {
                 color = region ? regionColors[region] : "url('#lines')";
                 if (mode.type === "ping-region" && mode.target.region !== region) {
-                  color = mix(0.5, color, darkColor);
+                  color = mix(0.1, color, "gray");
                 }
               }
 
@@ -362,6 +398,16 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               color = darkColor; // Default color for other regions
             }
 
+            let focusId = (mode.type === "globe" && mode.highlightedDcd)
+              || (mode.type === "dc-focus" && mode.dcId)
+              || undefined;
+
+            let stroke = lighten(0.3, color);
+            if (focusId && dc.id !== focusId) {
+              color = mix(0.3, color, 'gray');
+              stroke = color;
+            }
+
             const [cx, cy] = projected;
             return (
               <circle
@@ -370,7 +416,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                 cy={cy}
                 r={5}
                 fill={darken(0.2, color)}
-                stroke={lighten(0.3, color)}
+                stroke={stroke}
                 strokeWidth={1.5}
               >
                 <title>{dc.name}</title>
@@ -378,7 +424,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
             );
           })}
 
-          {mode.type !== "ping-between" && <Marker coordinates={mode.location} fill={darkColor} stroke="#fff" strokeWidth={1}>
+          {(mode.type === "globe" || mode.type === "ping-region") && <Marker coordinates={mode.location} fill={darkColor} stroke="#fff" strokeWidth={1}>
             <g
               fill="none"
               stroke="rgba(56, 12, 12, 0.8)"

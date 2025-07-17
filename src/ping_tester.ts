@@ -13,7 +13,7 @@ export type PingResult = {
     clientIp: string;
 };
 
-type PingSummary = {
+export type PingSummary = {
     dc: string;
     dc_id: number;
     region: string;
@@ -26,9 +26,9 @@ type PingSummary = {
     clientIpChanged: boolean
 };
 
-export const testPingHead = async (target: string): Promise<number> =>{
+export const testPingHead = async (target: string, signal?: AbortSignal ): Promise<number> =>{
     const start = performance.now();
-    const response = await fetch(`${target}?s=${start}`, { keepalive: true, cache: 'no-store', method: 'HEAD' });
+    const response = await fetch(`${target}?s=${start}`, { keepalive: true, cache: 'no-store', method: 'HEAD', signal });
     const latency = performance.now() - start;
 
     if (!response.ok) {
@@ -37,9 +37,9 @@ export const testPingHead = async (target: string): Promise<number> =>{
     return latency;
 }
 
-export const testPing = async (target: string): Promise<PingResult> =>{
+export const testPing = async (target: string, signal?: AbortSignal): Promise<PingResult> =>{
     const start = performance.now();
-    const response = await fetch(`${target}?s=${start}`, { keepalive: true, cache: 'no-store' });
+    const response = await fetch(`${target}?s=${start}`, { keepalive: true, cache: 'no-store', signal });
     const latency = performance.now() - start;
 
     if (!response.ok) {
@@ -62,8 +62,13 @@ export const testPing = async (target: string): Promise<PingResult> =>{
     };
 }
 
-export const testPings = async (target: string): Promise<PingSummary> => {
-    const initPingTest = await testPing(target);
+export type TestPingsOpts = {
+    signal?: AbortSignal;
+    onUpdate?: (arg: PingSummary) => void;
+};
+
+export const testPings = async (target: string, opts?: TestPingsOpts): Promise<PingSummary> => {
+    const initPingTest = await testPing(target, opts?.signal);
 
     const latencies: number[] = [];
 
@@ -71,35 +76,47 @@ export const testPings = async (target: string): Promise<PingSummary> => {
     const maxPings = 100000;
     const minPings = 30;
 
-    for (let i = 0; i < maxPings; i++) {
-        latencies.push(await testPingHead(target));
-        const age = Date.now() - testStart;
-        if (5000 < age && minPings <= latencies.length) {
-            break;
-        }
-        if (15000 < age) {
-            break;
-        }
-    }
-
-    latencies.sort((a, b) => a - b);
-    latencies.splice(Math.min(20, latencies.length / 2));
-
-    const latencyMax = Math.max(...latencies);
-    const latencyMin = Math.min(...latencies);
-    const latencyAvg = latencies.reduce((sum, latency) => sum + latency, 0) / latencies.length;
-    const latencyJitter = Math.sqrt(latencies.reduce((sum, latency) => sum + Math.pow(latency - latencyAvg, 2), 0) / latencies.length);
-
-    return {
+    let current = {
         dc: initPingTest.dc,
         dc_id: initPingTest.dc_id,
         region: initPingTest.region,
         serverIp: initPingTest.serverIp,
         clientIp: initPingTest.clientIp,
-        latencyMax,
-        latencyMin,
-        latencyAvg,
-        latencyJitter,
-        clientIpChanged: (await testPing(target)).clientIp != initPingTest.clientIp,
+        latencyMax: initPingTest.latency,
+        latencyMin: initPingTest.latency,
+        latencyAvg: initPingTest.latency,
+        latencyJitter: 0,
+        clientIpChanged: false,
     };
+
+    for (let i = 0; i < maxPings; i++) {
+        latencies.push(await testPingHead(target, opts?.signal));
+
+        /* update current */
+        {
+            latencies.sort((a, b) => a - b);
+            const use = latencies.slice(0, Math.max(20, latencies.length / 2));
+
+            current.latencyMax = Math.max(...use);
+            current.latencyMin = Math.min(...use);
+            current.latencyAvg = use.reduce((sum, latency) => sum + latency, 0) / use.length;
+            current.latencyJitter = Math.sqrt(use.reduce((sum, latency) => sum + Math.pow(latency - current.latencyAvg, 2), 0) / use.length);
+
+            opts?.onUpdate?.(current);
+        }
+
+        const age = Date.now() - testStart;
+
+        if (5000 < age && minPings <= latencies.length) {
+            break;
+        }
+
+        if (15000 < age) {
+            break;
+        }
+    }
+
+    current.clientIpChanged = (await testPing(target)).clientIp != initPingTest.clientIp;
+    return current;
 }
+

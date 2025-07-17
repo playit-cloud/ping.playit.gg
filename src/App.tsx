@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './index.css'
 import MapChart, { type Mode } from './MapChart';
+import datacenters from "./datacenters.json";
 
-import { testPing, testPings } from './ping_tester';
+import { testPings, type PingSummary } from './ping_tester';
 
 const pingTargets = [
     {
@@ -37,10 +38,20 @@ const pingTargets = [
     },
   ];
 
+type TestState =
+  { type: "waiting" }
+  | { type: "running", currentTargetIndex: number }
+  | { type: "complete", bestTargetIndex: number, selectedTargetIndex: number | undefined };
 
 function App() {
   const [userLocation, setUserLocation] = useState<[number, number] | undefined>(undefined);
   const [mode, setMode] = useState<Mode>({ type: "globe", location: userLocation || [0, 0] });
+  const [pingResults, setPingResults] = useState<{[id: string]: PingSummary}>({});
+  const [testState, setTestState] = useState<TestState>({
+    type: 'waiting',
+  });
+
+  const testController = useRef<AbortController | undefined>(undefined);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -62,67 +73,131 @@ function App() {
 
   useEffect(() => {
     setMode((mode: Mode): Mode => {
-      if (mode.type !== "ping-between" && userLocation != undefined) {
+      if (userLocation === undefined) {
+        return mode;
+      }
+
+      if (testState.type === "waiting") {
+        return {
+          type: "globe",
+          location: userLocation,
+        };
+      }
+
+      if (testState.type === "running" && mode.type === "ping-region") {
         return {
           ...mode,
           location: userLocation,
         };
       }
+
+      if (testState.type === "complete") {
+        if (testState.selectedTargetIndex === undefined) {
+          return {
+            type: "globe",
+            location: userLocation,
+            highlightedDcd: pingResults[pingTargets[testState.bestTargetIndex].id].dc_id,
+          };
+        }
+
+        return {
+          type: "dc-focus",
+          dcId: pingResults[pingTargets[testState.selectedTargetIndex].id].dc_id,
+        };
+      }
+
       return mode;
     });
-  }, [userLocation && userLocation[0] || 0, userLocation && userLocation[1] || 0]);
-  
+  }, [
+    userLocation && userLocation[0] || 0,
+    userLocation && userLocation[1] || 0,
+    testState.type,
+    testState.type === "complete" && testState.selectedTargetIndex,
+  ]);
 
-  useEffect(() => {
-    (async () => {
+  const stopTest = useMemo(() => () => {
+    if (testController.current) {
+      testController.current.abort();
+    }
+    
+    setTestState({
+      type: "waiting",
+    });
+  }, [setTestState]);
+
+  const startTest = async () => {
+    if (testController.current) {
+      testController.current.abort();
+    }
+    testController.current = new AbortController();
+
+    const location = userLocation;
+    if (!location) {
+      alert('location not loaded, test not ready');
       return;
-    await new Promise<void>((resolve) => setTimeout(resolve, 1000));
+    }
 
-    let target = await testPing("//gl4.rt.playit.gg");
-    setMode({ type: "ping-region", location: userLocation, target });
-    const globalResults = await testPings("//gl4.rt.playit.gg");
-    console.log("Global results:", globalResults);
+    const signal = testController.current.signal;
+    let bestIndex = 0;
+    let bestLatency = 0;
 
-    target = await testPing("//eu4.rt.playit.gg");
-    setMode({ type: "ping-region", location: userLocation, target });
-    const europeResults = await testPings("//eu4.rt.playit.gg");
-    console.log("Europe results:", europeResults);
+    for (let i = 0; i < pingTargets.length; ++i) {
+      setTestState({
+        type: "running",
+        currentTargetIndex: i,
+      });
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 100));
-    target = await testPing("//as4.rt.playit.gg");
-    setMode({ type: "ping-region", location: userLocation, target });
-    const asiaResults = await testPings("//as4.rt.playit.gg");
-    console.log("Asia results:", asiaResults);
+      setPingResults(r => {
+        const copy = {...r};
+        delete copy[targetDetails.id];
+        return copy;
+      });
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 100));
-    target = await testPing("//in4.rt.playit.gg");
-    setMode({ type: "ping-region", location: userLocation, target });
-    const indiaResults = await testPings("//in4.rt.playit.gg");
-    console.log("India results:", indiaResults);
+      const targetDetails = pingTargets[i];
+      let modeSet = false;
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 100));
-    target = await testPing("//sa4.rt.playit.gg");
-    setMode({ type: "ping-region", location: userLocation, target });
-    const southAmericaResults = await testPings("//sa4.rt.playit.gg");
-    console.log("South America results:", southAmericaResults);
+      const result = await testPings(targetDetails.target, {
+        signal,
+        onUpdate: (summary) => {
+          if (!modeSet) {
+            modeSet = true;
 
-    await new Promise<void>((resolve) => setTimeout(resolve, 100));
-    target = await testPing("//na4.rt.playit.gg");
-    setMode({ type: "ping-region", location: userLocation, target });
-    const northAmericaResults = await testPings("//na4.rt.playit.gg");
-    console.log("North America results:", northAmericaResults);
+            setMode({
+              type: 'ping-region',
+              location: userLocation,
+              target: { dc_id: summary.dc_id, region: summary.region },
+            });
+          }
 
-    // const res = await testPings("//255.ip.ply.gg/index.json");
-    // console.log(res);
-    })();
-  }, []);
+          setPingResults(r => ({
+            [targetDetails.id]: summary,
+            ...r
+          }));
+        }
+      });
+
+      if (i === 0) {
+        bestLatency = result.latencyAvg;
+      } else if (result.latencyAvg < bestLatency) {
+        bestIndex = i;
+        bestLatency = result.latencyAvg;
+      }
+    }
+
+    setTestState({
+      type: "complete",
+      selectedTargetIndex: undefined,
+      bestTargetIndex: bestIndex,
+    });
+  };
 
   return (
     <div>
       <div className="header">
         <a href="https://playit.gg">Playit.gg</a> Latency Tool
         <div className="grow" />
-        <button>Start Test</button>
+        { testState.type === "running" ? <button className="stop" onClick={stopTest}>Stop Test</button> : <button onClick={startTest}>Start Test</button> }
+        
       </div>
       <div className="content">
         <div className="body">
@@ -130,25 +205,80 @@ function App() {
         </div>
         <div className="details">
           {
-            pingTargets.map(target => (
-              <div key={target.id} className={"region " + (target.id === "na4" ? "active" : "")}>
-                <div className="title">{target.name}</div>
-                <div className="data">
-                  <div className="attribute">
-                    <span>Datacenter: </span> ?
-                  </div>
-                  <div className="attribute">
-                    <span>Average Latency: </span> ?
-                  </div>
-                  <div className="attribute">
-                    <span>Latency Range (High/Low): </span> ?
-                  </div>
-                  <div className="attribute">
-                    <span>Latency Jitter: </span> ?
+            pingTargets.map((target, i) => {
+              
+              let regionCls = "region";
+              if (testState.type === "running" && testState.currentTargetIndex === i) {
+                regionCls = "region active";
+              } else if (testState.type === "complete" && testState.selectedTargetIndex === i) {
+                regionCls = "region selected";
+              }  else if (testState.type === "complete" && testState.bestTargetIndex === i) {
+                regionCls = "region best";
+              }
+
+              let dcName = '?';
+              const dcId = pingResults[target.id]?.dc_id;
+              if (dcId) {
+                dcName = datacenters.find(d => d.id === dcId)?.name || '?';
+              }
+
+              const pLatency = (l?: number, l2?: number): string => {
+                if (!l) {
+                  return '?';
+                }
+                if (!l2) {
+                  return `${(Math.round(l * 10.0)/10.0).toFixed(1)}ms`;
+                }
+                return `${(Math.round(l * 10.0)/10.0).toFixed(1)}/${(Math.round(l2 * 10.0)/10.0).toFixed(1)}ms`;
+              };
+
+              let style = undefined;
+              let onClick = undefined;
+
+              if (testState.type === "complete") {
+                style = {cursor: "pointer"};
+
+                onClick = () => {
+                  setTestState((s: TestState): TestState => {
+                    if (s.type !== "complete") {
+                      return s;
+                    }
+                    if (s.selectedTargetIndex === i) {
+                      return {
+                        type: "complete",
+                        selectedTargetIndex: undefined,
+                        bestTargetIndex: s.bestTargetIndex,
+                      };
+                    }
+                    return {
+                      type: "complete",
+                      selectedTargetIndex: i,
+                      bestTargetIndex: s.bestTargetIndex,
+                    };
+                  });
+                };
+              }
+
+              return (
+                <div key={target.id} className={regionCls} style={style} onClick={onClick}>
+                  <div className="title">{target.name}</div>
+                  <div className="data">
+                    <div className="attribute">
+                      <span>Datacenter: </span> { dcName }
+                    </div>
+                    <div className="attribute">
+                      <span>Average Latency: </span> { pLatency(pingResults[target.id]?.latencyAvg) }
+                    </div>
+                    <div className="attribute">
+                      <span>Latency Range (High/Low): </span> { pLatency(pingResults[target.id]?.latencyMax, pingResults[target.id]?.latencyMin) }
+                    </div>
+                    <div className="attribute">
+                      <span>Latency Jitter: </span> { pLatency(pingResults[target.id]?.latencyJitter) }
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           }
         </div>
       </div>
