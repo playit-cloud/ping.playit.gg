@@ -2,7 +2,6 @@ import {
   ComposableMap,
   Geographies,
   Geography,
-  Graticule,
   Line,
   Marker,
   type ProjectionConfig
@@ -12,7 +11,6 @@ import { darken, lighten, mix } from "polished";
 
 import datacenters from "./datacenters.json";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { PingResult } from "./ping_tester";
 
 const geoUrl = "/features.json";
 
