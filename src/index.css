@@ -132,3 +132,21 @@ button.stop {
   font-weight: bold;
   color: rgb(148, 148, 148);
 }
+
+@media (max-width: 800px) {
+  .content {
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 10000px;
+    min-height: 100vh;
+    height: auto;
+  }
+
+  .content > .details {
+    overflow-y: hidden;
+    max-height: 10000px;
+    height: auto;
+    flex-basis: auto;
+    flex-grow: 1;
+  }
+}
