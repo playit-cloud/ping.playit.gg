@@ -20,6 +20,10 @@ a {
   margin-right: 5px;
 }
 
+p > a {
+  margin-right: auto;
+}
+
 a:hover {
   color: rgb(191, 104, 10);
   text-decoration: underline;
@@ -49,7 +53,7 @@ body, #root {
   height: 50px;
 }
 
-.header > button {
+button {
   padding: 2px 10px;
   background: rgb(254, 136, 10);
   color: white;
@@ -66,7 +70,18 @@ button.stop {
   border-color: rgb(223, 46, 46);
 }
 
-.header > button:hover {
+button.show-results {
+  background: rgb(19, 98, 109);
+  border-color: rgb(13, 123, 143);
+  margin-left: 10px;
+}
+
+button.close {
+  background: rgb(19, 19, 19);
+  border-color: rgb(0, 0, 0);
+}
+
+button:hover {
   border-color: white;
 }
 
@@ -149,4 +164,52 @@ button.stop {
     flex-basis: auto;
     flex-grow: 1;
   }
+}
+
+.test-results {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.4);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 100vh;
+}
+
+.test-results > .inner {
+  width: 800px;
+  background: rgb(39, 38, 38);
+  max-width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: solid 5px black;
+  cursor: auto;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.test-results h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+p.note {
+  margin-left: 10px;
+  border-left: solid 2px rgb(19, 19, 19);
+  background: rgb(29, 28, 28);
+  padding: 10px;
+}
+
+p.note.orange {
+  border-color: rgb(255, 102, 0);
+  background: rgb(43, 19, 4);
 }

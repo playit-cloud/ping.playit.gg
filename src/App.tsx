@@ -4,6 +4,7 @@ import MapChart, { type Mode } from './MapChart';
 import datacenters from "./datacenters.json";
 
 import { testPings, type PingSummary } from './ping_tester';
+import TestResults from './TestResults';
 
 const pingTargets = [
     {
@@ -50,6 +51,7 @@ function App() {
   const [testState, setTestState] = useState<TestState>({
     type: 'waiting',
   });
+  const [showResults, setShowResults] = useState(false);
 
   const testController = useRef<AbortController | undefined>(undefined);
 
@@ -189,14 +191,18 @@ function App() {
       selectedTargetIndex: undefined,
       bestTargetIndex: bestIndex,
     });
+
+    setShowResults(true);
   };
 
   return (
     <div>
+      { showResults && <TestResults onClose={() => setShowResults(false)} pingResults={pingResults} /> }
       <div className="header">
         <a href="https://playit.gg">Playit.gg</a> Latency Tool
         <div className="grow" />
         { testState.type === "running" ? <button className="stop" onClick={stopTest}>Stop Test</button> : <button onClick={startTest}>Start Test</button> }
+        { testState.type === "complete" ? <button className="show-results" onClick={() => setShowResults(true)}>Show Results</button> : null }
         
       </div>
       <div className="content">
