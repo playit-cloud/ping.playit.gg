@@ -54,7 +54,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                 Using our <strong>"{best.region}"</strong> Regional Tunnel your ISP is connecting you to our <strong>{best.dc}</strong> datacenter with <strong>~{Math.round(best.latencyAvg)}ms</strong> of latency.
             </p>
             <p className="note orange">
-                <a href="https://playit.gg/account/billing/shop/premium" target="_blank">Playit Premium</a> with a <strong>"{best.region}"</strong> Regional Tunnel cuts off <strong>~{Math.round(gl.latencyAvg - best.latencyAvg)}ms</strong> of latency (<strong>{scale}x</strong> faster). Where the server is hosted will also have an affect, <a target="_blank" href="https://playit.gg/support/how-to-lower-ping/">read this</a> for more details.
+                <a href="https://playit.gg/account/billing/shop/premium" target="_blank">Playit Premium</a> with a <strong>"{best.region}"</strong> Regional Tunnel cuts off <strong>~{Math.round(gl.latencyAvg - best.latencyAvg)}ms</strong> of latency (<strong>{scale}x</strong> faster). Where the server is hosted will also have an affect on your in game latency, <a target="_blank" href="https://playit.gg/support/how-to-lower-ping/">read this</a> for more details.
             </p>
             <p>
                 If you were connecting to your own server made public through {playitLink}, here's what you can expect:
