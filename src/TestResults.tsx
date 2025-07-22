@@ -26,7 +26,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
         message = (
             <>
             <p>
-                Connecting to our free Global Anycast IP, you're ISP is routing you to <strong>"{gl.region}"</strong> with <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency. More specifically our <strong>{gl.dc}</strong> datacenter.
+                Connecting to our free Global Anycast IP, your ISP is routing you to <strong>"{gl.region}"</strong> with <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency. More specifically our <strong>{gl.dc}</strong> datacenter.
             </p>
             <p className="note">
                 When connecting to a game server made public by {playitLink}, your connection will not 
@@ -47,7 +47,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
         message = (
             <>
             <p>
-                Connecting to our free Global Anycast IP, you're ISP is routing you to <strong>"{gl.region}"</strong> (with our <strong>{gl.dc}</strong> datacenter) at <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency.
+                Connecting to our free Global Anycast IP, your ISP is routing you to <strong>"{gl.region}"</strong> (with our <strong>{gl.dc}</strong> datacenter) at <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency.
             </p>
 
             <p>
