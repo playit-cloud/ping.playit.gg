@@ -26,7 +26,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
         message = (
             <>
             <p>
-                Connecting to our free Global Ancast IP, you're ISP is routing you to <strong>"{gl.region}"</strong> with <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency. More specifically our <strong>{gl.dc}</strong> datacenter.
+                Connecting to our free Global Anycast IP, you're ISP is routing you to <strong>"{gl.region}"</strong> with <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency. More specifically our <strong>{gl.dc}</strong> datacenter.
             </p>
             <p className="note">
                 When connecting to a game server made public by {playitLink}, your connection will not 
@@ -47,7 +47,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
         message = (
             <>
             <p>
-                Connecting to our free Global Ancast IP, you're ISP is routing you to <strong>"{gl.region}"</strong> (with our <strong>{gl.dc}</strong> datacenter) at <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency.
+                Connecting to our free Global Anycast IP, you're ISP is routing you to <strong>"{gl.region}"</strong> (with our <strong>{gl.dc}</strong> datacenter) at <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency.
             </p>
 
             <p>
@@ -59,7 +59,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
             <p>
                 If you were connecting to your own server made public through {playitLink}, here's what you can expect:
                 <br/><br/>
-                <strong>With Global Ancast (free):</strong>
+                <strong>With Global Anycast (free):</strong>
                 <br/>
                 <strong>~{Math.round(glInGame)}ms</strong> of latency in game.
                 <br/>
