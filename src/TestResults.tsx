@@ -34,7 +34,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                 users / players. If a player has bad latency in game, <a target="_blank" href="https://ping.playit.gg">have them run this latency test</a>.
             </p>
             <p>
-                If you were connecting to your own server make public through {playitLink}, you can expect <strong>~{Math.round(gl.latencyAvg + best.latencyAvg)}ms</strong> of latency in game.
+                If you were connecting to your own server made public through {playitLink}, you can expect <strong>~{Math.round(gl.latencyAvg + best.latencyAvg)}ms</strong> of latency in game.
             </p>
             </>
         );
