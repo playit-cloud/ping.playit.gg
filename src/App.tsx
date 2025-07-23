@@ -127,8 +127,11 @@ function App() {
     });
   }, [setTestState]);
 
-  const startTest = async () => {
+  const startTest = async (onlyIfWaiting?: boolean) => {
     if (testController.current) {
+      if(onlyIfWaiting) {
+        return;
+      }
       testController.current.abort();
     }
     testController.current = new AbortController();
@@ -195,13 +198,25 @@ function App() {
     setShowResults(true);
   };
 
+  useEffect(() => {
+    if (!userLocation) {
+      return;
+    }
+
+    const tid = setTimeout(() => {
+      startTest(true);
+    }, 100);
+
+    return () => clearTimeout(tid);
+  }, [userLocation]); 
+
   return (
     <div>
       { showResults && <TestResults onClose={() => setShowResults(false)} pingResults={pingResults} /> }
       <div className="header">
         <a href="https://playit.gg">Playit.gg</a> Latency Tool
         <div className="grow" />
-        { testState.type === "running" ? <button className="stop" onClick={stopTest}>Stop Test</button> : <button onClick={startTest}>Start Test</button> }
+        { testState.type === "running" ? <button className="stop" onClick={stopTest}>Stop Test</button> : <button onClick={() => startTest()}>Start Test</button> }
         { testState.type === "complete" ? <button className="show-results" onClick={() => setShowResults(true)}>Show Results</button> : null }
         
       </div>
