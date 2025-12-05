@@ -1,55 +1,34 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import './index.css'
-import MapChart, { type Mode } from './MapChart';
-import datacenters from "./datacenters.json";
+import { useEffect, useMemo, useRef, useState } from "react";
+import "./index.css";
+import MapChart, { type Mode } from "./MapChart";
+import datacenters from "./pingDcs";
 
-import { testPings, type PingSummary } from './ping_tester';
-import TestResults from './TestResults';
-
-const pingTargets = [
-    {
-      id: "gl4",
-      name: "Global Anycast (free)",
-      target: "//gl4.rt.playit.gg",
-    },
-    {
-      id: "na4",
-      name: "North America (premium)",
-      target: "//na4.rt.playit.gg",
-    },
-    {
-      id: "eu4",
-      name: "Europe (premium)",
-      target: "//eu4.rt.playit.gg",
-    },
-    {
-      id: "as4",
-      name: "Asia (premium)",
-      target: "//as4.rt.playit.gg",
-    },
-    {
-      id: "sa4",
-      name: "South America (premium)",
-      target: "//sa4.rt.playit.gg",
-    },
-    {
-      id: "in4",
-      name: "India (premium)",
-      target: "//in4.rt.playit.gg",
-    },
-  ];
+import { testPings, type PingSummary } from "./ping_tester";
+import TestResults from "./TestResults";
+import pingTargets from "./pingTargets";
 
 type TestState =
-  { type: "waiting" }
-  | { type: "running", currentTargetIndex: number }
-  | { type: "complete", bestTargetIndex: number, selectedTargetIndex: number | undefined };
+  | { type: "waiting" }
+  | { type: "running"; currentTargetIndex: number }
+  | {
+      type: "complete";
+      bestTargetIndex: number;
+      selectedTargetIndex: number | undefined;
+    };
 
 function App() {
-  const [userLocation, setUserLocation] = useState<[number, number] | undefined>(undefined);
-  const [mode, setMode] = useState<Mode>({ type: "globe", location: userLocation || [0, 0] });
-  const [pingResults, setPingResults] = useState<{[id: string]: PingSummary}>({});
+  const [userLocation, setUserLocation] = useState<
+    [number, number] | undefined
+  >(undefined);
+  const [mode, setMode] = useState<Mode>({
+    type: "globe",
+    location: userLocation || [0, 0],
+  });
+  const [pingResults, setPingResults] = useState<{ [id: string]: PingSummary }>(
+    {},
+  );
   const [testState, setTestState] = useState<TestState>({
-    type: 'waiting',
+    type: "waiting",
   });
   const [showResults, setShowResults] = useState(false);
 
@@ -60,9 +39,15 @@ function App() {
     const signal = controller.signal;
 
     (async () => {
-      const res = await fetch('https://ipv4-check-perf.radar.cloudflare.com/api/info', { signal });
+      const res = await fetch(
+        "https://ipv4-check-perf.radar.cloudflare.com/api/info",
+        { signal },
+      );
       const json = await res.json();
-      if (typeof json.latitude === "string" && typeof json.longitude === "string") {
+      if (
+        typeof json.latitude === "string" &&
+        typeof json.longitude === "string"
+      ) {
         setUserLocation([+json.longitude, +json.latitude]);
       } else {
         console.log("Cloudflare Response: ", json);
@@ -98,38 +83,43 @@ function App() {
           return {
             type: "globe",
             location: userLocation,
-            highlightedDcd: pingResults[pingTargets[testState.bestTargetIndex].id].dc_id,
+            highlightedDcd:
+              pingResults[pingTargets[testState.bestTargetIndex].id].dc_id,
           };
         }
 
         return {
           type: "dc-focus",
-          dcId: pingResults[pingTargets[testState.selectedTargetIndex].id].dc_id,
+          dcId: pingResults[pingTargets[testState.selectedTargetIndex].id]
+            .dc_id,
         };
       }
 
       return mode;
     });
   }, [
-    userLocation && userLocation[0] || 0,
-    userLocation && userLocation[1] || 0,
+    (userLocation && userLocation[0]) || 0,
+    (userLocation && userLocation[1]) || 0,
     testState.type,
     testState.type === "complete" && testState.selectedTargetIndex,
   ]);
 
-  const stopTest = useMemo(() => () => {
-    if (testController.current) {
-      testController.current.abort();
-    }
-    
-    setTestState({
-      type: "waiting",
-    });
-  }, [setTestState]);
+  const stopTest = useMemo(
+    () => () => {
+      if (testController.current) {
+        testController.current.abort();
+      }
+
+      setTestState({
+        type: "waiting",
+      });
+    },
+    [setTestState],
+  );
 
   const startTest = async (onlyIfWaiting?: boolean) => {
     if (testController.current) {
-      if(onlyIfWaiting) {
+      if (onlyIfWaiting) {
         return;
       }
       testController.current.abort();
@@ -138,7 +128,7 @@ function App() {
 
     const location = userLocation;
     if (!location) {
-      alert('location not loaded, test not ready');
+      alert("location not loaded, test not ready");
       return;
     }
 
@@ -152,8 +142,8 @@ function App() {
         currentTargetIndex: i,
       });
 
-      setPingResults(r => {
-        const copy = {...r};
+      setPingResults((r) => {
+        const copy = { ...r };
         delete copy[targetDetails.id];
         return copy;
       });
@@ -168,17 +158,17 @@ function App() {
             modeSet = true;
 
             setMode({
-              type: 'ping-region',
+              type: "ping-region",
               location: userLocation,
               target: { dc_id: summary.dc_id, region: summary.region },
             });
           }
 
-          setPingResults(r => ({
+          setPingResults((r) => ({
             [targetDetails.id]: summary,
-            ...r
+            ...r,
           }));
-        }
+        },
       });
 
       if (i === 0) {
@@ -208,99 +198,130 @@ function App() {
     }, 100);
 
     return () => clearTimeout(tid);
-  }, [userLocation]); 
+  }, [userLocation]);
 
   return (
     <div>
-      { showResults && <TestResults onClose={() => setShowResults(false)} pingResults={pingResults} /> }
+      {showResults && (
+        <TestResults
+          onClose={() => setShowResults(false)}
+          pingResults={pingResults}
+        />
+      )}
       <div className="header">
         <a href="https://playit.gg">Playit.gg</a> Latency Tool
         <div className="grow" />
-        { testState.type === "running" ? <button className="stop" onClick={stopTest}>Stop Test</button> : <button onClick={() => startTest()}>Start Test</button> }
-        { testState.type === "complete" ? <button className="show-results" onClick={() => setShowResults(true)}>Show Results</button> : null }
-        
+        {testState.type === "running" ? (
+          <button className="stop" onClick={stopTest}>
+            Stop Test
+          </button>
+        ) : (
+          <button onClick={() => startTest()}>Start Test</button>
+        )}
+        {testState.type === "complete" ? (
+          <button className="show-results" onClick={() => setShowResults(true)}>
+            Show Results
+          </button>
+        ) : null}
       </div>
       <div className="content">
         <div className="body">
-        <MapChart mode={mode} />
+          <MapChart mode={mode} />
         </div>
         <div className="details">
-          {
-            pingTargets.map((target, i) => {
-              
-              let regionCls = "region";
-              if (testState.type === "running" && testState.currentTargetIndex === i) {
-                regionCls = "region active";
-              } else if (testState.type === "complete" && testState.selectedTargetIndex === i) {
-                regionCls = "region selected";
-              }  else if (testState.type === "complete" && testState.bestTargetIndex === i) {
-                regionCls = "region best";
+          {pingTargets.map((target, i) => {
+            let regionCls = "region";
+            if (
+              testState.type === "running" &&
+              testState.currentTargetIndex === i
+            ) {
+              regionCls = "region active";
+            } else if (
+              testState.type === "complete" &&
+              testState.selectedTargetIndex === i
+            ) {
+              regionCls = "region selected";
+            } else if (
+              testState.type === "complete" &&
+              testState.bestTargetIndex === i
+            ) {
+              regionCls = "region best";
+            }
+
+            let dcName = "?";
+            const dcId = pingResults[target.id]?.dc_id;
+            if (dcId) {
+              dcName = datacenters.find((d) => d.id === dcId)?.name || "?";
+            }
+
+            const pLatency = (l?: number, l2?: number): string => {
+              if (!l) {
+                return "?";
               }
-
-              let dcName = '?';
-              const dcId = pingResults[target.id]?.dc_id;
-              if (dcId) {
-                dcName = datacenters.find(d => d.id === dcId)?.name || '?';
+              if (!l2) {
+                return `${(Math.round(l * 10.0) / 10.0).toFixed(1)}ms`;
               }
+              return `${(Math.round(l * 10.0) / 10.0).toFixed(1)}/${(Math.round(l2 * 10.0) / 10.0).toFixed(1)}ms`;
+            };
 
-              const pLatency = (l?: number, l2?: number): string => {
-                if (!l) {
-                  return '?';
-                }
-                if (!l2) {
-                  return `${(Math.round(l * 10.0)/10.0).toFixed(1)}ms`;
-                }
-                return `${(Math.round(l * 10.0)/10.0).toFixed(1)}/${(Math.round(l2 * 10.0)/10.0).toFixed(1)}ms`;
-              };
+            let style = undefined;
+            let onClick = undefined;
 
-              let style = undefined;
-              let onClick = undefined;
+            if (testState.type === "complete") {
+              style = { cursor: "pointer" };
 
-              if (testState.type === "complete") {
-                style = {cursor: "pointer"};
-
-                onClick = () => {
-                  setTestState((s: TestState): TestState => {
-                    if (s.type !== "complete") {
-                      return s;
-                    }
-                    if (s.selectedTargetIndex === i) {
-                      return {
-                        type: "complete",
-                        selectedTargetIndex: undefined,
-                        bestTargetIndex: s.bestTargetIndex,
-                      };
-                    }
+              onClick = () => {
+                setTestState((s: TestState): TestState => {
+                  if (s.type !== "complete") {
+                    return s;
+                  }
+                  if (s.selectedTargetIndex === i) {
                     return {
                       type: "complete",
-                      selectedTargetIndex: i,
+                      selectedTargetIndex: undefined,
                       bestTargetIndex: s.bestTargetIndex,
                     };
-                  });
-                };
-              }
+                  }
+                  return {
+                    type: "complete",
+                    selectedTargetIndex: i,
+                    bestTargetIndex: s.bestTargetIndex,
+                  };
+                });
+              };
+            }
 
-              return (
-                <div key={target.id} className={regionCls} style={style} onClick={onClick}>
-                  <div className="title">{target.name}</div>
-                  <div className="data">
-                    <div className="attribute">
-                      <span>Datacenter: </span> { dcName }
-                    </div>
-                    <div className="attribute">
-                      <span>Average Latency: </span> { pLatency(pingResults[target.id]?.latencyAvg) }
-                    </div>
-                    <div className="attribute">
-                      <span>Latency Range (High/Low): </span> { pLatency(pingResults[target.id]?.latencyMax, pingResults[target.id]?.latencyMin) }
-                    </div>
-                    <div className="attribute">
-                      <span>Latency Jitter: </span> { pLatency(pingResults[target.id]?.latencyJitter) }
-                    </div>
+            return (
+              <div
+                key={target.id}
+                className={regionCls}
+                style={style}
+                onClick={onClick}
+              >
+                <div className="title">{target.name}</div>
+                <div className="data">
+                  <div className="attribute">
+                    <span>Datacenter: </span> {dcName}
+                  </div>
+                  <div className="attribute">
+                    <span>Average Latency: </span>{" "}
+                    {pLatency(pingResults[target.id]?.latencyAvg)}
+                  </div>
+                  <div className="attribute">
+                    <span>Latency Range (High/Low): </span>{" "}
+                    {pLatency(
+                      pingResults[target.id]?.latencyMax,
+                      pingResults[target.id]?.latencyMin,
+                    )}
+                  </div>
+                  <div className="attribute">
+                    <span>Latency Jitter: </span>{" "}
+                    {pLatency(pingResults[target.id]?.latencyJitter)}
                   </div>
                 </div>
-              );
-            })
-          }
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
