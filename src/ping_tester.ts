@@ -50,11 +50,18 @@ export const testPing = async (
   signal?: AbortSignal,
 ): Promise<PingResult> => {
   const start = performance.now();
-  const response = await fetch(`${target}?s=${start}`, {
-    keepalive: true,
-    cache: "no-store",
-    signal,
-  });
+  let response;
+  try {
+    response = await fetch(`${target}?s=${start}`, {
+      keepalive: true,
+      cache: "no-store",
+      signal,
+    });
+  } catch (e: unknown) {
+    console.log("Got error running ping test to", target, e);
+    throw e;
+  }
+
   const latency = performance.now() - start;
 
   if (!response.ok) {
