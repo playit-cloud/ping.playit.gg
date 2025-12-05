@@ -9,7 +9,7 @@ import {
 
 import { darken, lighten, mix } from "polished";
 
-import datacenters from "./datacenters.json";
+import datacenters from "./pingDcs";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 const geoUrl = "/features.json";
