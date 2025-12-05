@@ -4,7 +4,7 @@ import {
   Geography,
   Line,
   Marker,
-  type ProjectionConfig
+  type ProjectionConfig,
 } from "react-simple-maps";
 
 import { darken, lighten, mix } from "polished";
@@ -14,7 +14,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const geoUrl = "/features.json";
 
-function lerpProjectionConfig(configA: ProjectionConfig, configB: ProjectionConfig, t: number): ProjectionConfig {
+function lerpProjectionConfig(
+  configA: ProjectionConfig,
+  configB: ProjectionConfig,
+  t: number,
+): ProjectionConfig {
   function lerp(a: number, b: number, t: number) {
     return a + (b - a) * t;
   }
@@ -63,7 +67,10 @@ function lerpProjectionConfig(configA: ProjectionConfig, configB: ProjectionConf
 
 // Utility to generate a projection config that ensures two GPS points are within view
 // Accepts two [lon, lat] points and returns a projectionConfig for geoAzimuthalEqualArea
-function getProjectionConfigForPoints(pointA: [number, number], pointB: [number, number]): ProjectionConfig {
+function getProjectionConfigForPoints(
+  pointA: [number, number],
+  pointB: [number, number],
+): ProjectionConfig {
   // Calculate the midpoint
   const midLon = (pointA[0] + pointB[0]) / 2;
   const midLat = (pointA[1] + pointB[1]) / 2;
@@ -132,14 +139,14 @@ const europeGeoIds = [
   "CHE", // Switzerland
   "UKR", // Ukraine
   "GBR", // United Kingdom
-  "VAT"  // Vatican City
+  "VAT", // Vatican City
 ];
 
 // North America geo IDs
 const northAmericaGeoIds = [
   "USA", // United States
   "CAN", // Canada
-  "MEX"  // Mexico
+  "MEX", // Mexico
 ];
 
 const latinAmericaGeoIds = [
@@ -186,12 +193,12 @@ const asiaGeoIds = [
   "PNG", // Papua New Guinea
 ];
 
-const orangeColor = '#FF8329';
-const blueColor = '#308DFC';
-const grayColor = 'rgb(207, 41, 226)';
-const darkColor = '#212a33';
-const greenColor = '#0db97a';
-const redColor = '#D24A3B';
+const orangeColor = "#FF8329";
+const blueColor = "#308DFC";
+const grayColor = "rgb(207, 41, 226)";
+const darkColor = "#212a33";
+const greenColor = "#0db97a";
+const redColor = "#D24A3B";
 
 const regionColors: Record<string, string> = {
   europe: blueColor,
@@ -201,34 +208,35 @@ const regionColors: Record<string, string> = {
   asia: greenColor,
 };
 
-export type Mode = {
-  type: "globe",
-  location: [number, number],
-  highlightedDcd?: number;
-} | {
-  type: "ping-region",
-  location: [number, number],
-  target: { dc_id: number; region: string; },
-} | {
-  type: "ping-between"
-  sourceDcId: number
-  targetDcId: number
-} | {
-  type: "dc-focus",
-  dcId: number,
-};
+export type Mode =
+  | {
+      type: "globe";
+      location: [number, number];
+      highlightedDcd?: number;
+    }
+  | {
+      type: "ping-region";
+      location: [number, number];
+      target: { dc_id: number; region: string };
+    }
+  | {
+      type: "ping-between";
+      sourceDcId: number;
+      targetDcId: number;
+    }
+  | {
+      type: "dc-focus";
+      dcId: number;
+    };
 
 function easeInOutCirc(x: number): number {
-return x < 0.5
-  ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2
-  : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
+  return x < 0.5
+    ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2
+    : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
 }
 
 const MapChart = ({ mode }: { mode: Mode }) => {
-  let points = [
-    [0, 0] as [number, number],
-    [0, 0] as [number, number],
-  ];
+  const points = [[0, 0] as [number, number], [0, 0] as [number, number]];
 
   if (mode.type === "ping-region") {
     points[0][0] = mode.location[0];
@@ -246,7 +254,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
 
     if (mode.type === "globe") {
       if (mode.highlightedDcd) {
-        const dc = datacenters.find(d => d.id === mode.highlightedDcd);
+        const dc = datacenters.find((d) => d.id === mode.highlightedDcd);
         if (dc) {
           return getProjectionConfigForPoints(
             [mode.location[0], mode.location[1]],
@@ -255,9 +263,8 @@ const MapChart = ({ mode }: { mode: Mode }) => {
         }
       }
       singleGps = [mode.location[0], mode.location[1]];
-    }
-    else if (mode.type === "dc-focus") {
-      const dc = datacenters.find(dc => dc.id === mode.dcId);
+    } else if (mode.type === "dc-focus") {
+      const dc = datacenters.find((dc) => dc.id === mode.dcId);
       singleGps = dc?.location as [number, number] | undefined;
     }
 
@@ -279,11 +286,13 @@ const MapChart = ({ mode }: { mode: Mode }) => {
     mode.type === "globe" && mode.location[0],
     mode.type === "globe" && mode.location[1],
     mode.type === "globe" && mode.highlightedDcd,
-    mode.type === "dc-focus" && mode.dcId
+    mode.type === "dc-focus" && mode.dcId,
   ]);
 
   const projectionStartRef = useRef<ProjectionConfig | undefined>(undefined);
-  const [projection, setProjection] = useState<ProjectionConfig | undefined>(undefined);
+  const [projection, setProjection] = useState<ProjectionConfig | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (!targetProjection) {
@@ -312,8 +321,14 @@ const MapChart = ({ mode }: { mode: Mode }) => {
 
       const elapsed = msTime - start;
 
-      const t = Math.min(1.0, elapsed * 0.001 / animationDuration);
-      setProjection(lerpProjectionConfig(projectionStartRef.current, targetProjection, easeInOutCirc(t)));
+      const t = Math.min(1.0, (elapsed * 0.001) / animationDuration);
+      setProjection(
+        lerpProjectionConfig(
+          projectionStartRef.current,
+          targetProjection,
+          easeInOutCirc(t),
+        ),
+      );
       if (t < 1) {
         tid = requestAnimationFrame(updateAnimation);
       }
@@ -325,18 +340,22 @@ const MapChart = ({ mode }: { mode: Mode }) => {
 
   return (
     <ComposableMap
-      projection={mode.type === "globe" ? "geoConicEquidistant" : "geoConicEquidistant"}
+      projection={
+        mode.type === "globe" ? "geoConicEquidistant" : "geoConicEquidistant"
+      }
       projectionConfig={projection}
-
       width={800}
       height={600}
-      style={{backgroundColor: "gray", width: "100%", height: "100%"}}
+      style={{ backgroundColor: "gray", width: "100%", height: "100%" }}
     >
-      <Geographies geography={geoUrl} stroke={darken(0.2, orangeColor)} strokeWidth={0.5}>
+      <Geographies
+        geography={geoUrl}
+        stroke={darken(0.2, orangeColor)}
+        strokeWidth={0.5}
+      >
         {({ geographies, projection }) => (
           <>
-          {
-            geographies.map((geo) => {
+            {geographies.map((geo) => {
               const europe = europeGeoIds.indexOf(geo.id) !== -1;
               const northAmerica = northAmericaGeoIds.indexOf(geo.id) !== -1;
               const latinAmerica = latinAmericaGeoIds.indexOf(geo.id) !== -1;
@@ -359,7 +378,10 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               let color = "url('#lines')";
               if (region) {
                 color = region ? regionColors[region] : "url('#lines')";
-                if (mode.type === "ping-region" && mode.target.region !== region) {
+                if (
+                  mode.type === "ping-region" &&
+                  mode.target.region !== region
+                ) {
                   color = mix(0.1, color, "gray");
                 }
               }
@@ -372,71 +394,80 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                   onClick={() => console.log(geo.properties.name)}
                 />
               );
-            })
-          }
+            })}
 
-          { mode.type != "globe" && <Line coordinates={points} stroke="#F53" strokeWidth={2} /> }
+            {mode.type != "globe" && (
+              <Line coordinates={points} stroke="#F53" strokeWidth={2} />
+            )}
 
-          {datacenters.map((dc) => {
-            const projected = projection(dc.location as [number, number]);
-            if (!projected) return null;
+            {datacenters.map((dc) => {
+              const projected = projection(dc.location as [number, number]);
+              if (!projected) return null;
 
-            let color;
-            if (dc.region === "europe") {
-              color = blueColor;
-            } else if (dc.region === "north-america") {
-              color = orangeColor;
-            } else if (dc.region === "south-america") {
-              color = redColor;
-            } else if (dc.region === "india") {
-              color = grayColor;
-            } else if (dc.region === "asia") {
-              color = greenColor;
-            } else {
-              color = darkColor; // Default color for other regions
-            }
+              let color;
+              if (dc.region === "europe") {
+                color = blueColor;
+              } else if (dc.region === "north-america") {
+                color = orangeColor;
+              } else if (dc.region === "south-america") {
+                color = redColor;
+              } else if (dc.region === "india") {
+                color = grayColor;
+              } else if (dc.region === "asia") {
+                color = greenColor;
+              } else {
+                color = darkColor; // Default color for other regions
+              }
 
-            let focusId = (mode.type === "globe" && mode.highlightedDcd)
-              || (mode.type === "dc-focus" && mode.dcId)
-              || undefined;
+              const focusId =
+                (mode.type === "globe" && mode.highlightedDcd) ||
+                (mode.type === "dc-focus" && mode.dcId) ||
+                undefined;
 
-            let stroke = lighten(0.3, color);
-            if (focusId && dc.id !== focusId) {
-              color = mix(0.3, color, 'gray');
-              stroke = color;
-            }
+              let stroke = lighten(0.3, color);
+              if (focusId && dc.id !== focusId) {
+                color = mix(0.3, color, "gray");
+                stroke = color;
+              }
 
-            const [cx, cy] = projected;
-            return (
-              <circle
-                key={dc.name}
-                cx={cx}
-                cy={cy}
-                r={5}
-                fill={darken(0.2, color)}
-                stroke={stroke}
-                strokeWidth={1.5}
+              const [cx, cy] = projected;
+              return (
+                <circle
+                  key={dc.name}
+                  cx={cx}
+                  cy={cy}
+                  r={5}
+                  fill={darken(0.2, color)}
+                  stroke={stroke}
+                  strokeWidth={1.5}
+                >
+                  <title>{dc.name}</title>
+                </circle>
+              );
+            })}
+
+            {(mode.type === "globe" || mode.type === "ping-region") && (
+              <Marker
+                coordinates={mode.location}
+                fill={darkColor}
+                stroke="#fff"
+                strokeWidth={1}
               >
-                <title>{dc.name}</title>
-              </circle>
-            );
-          })}
-
-          {(mode.type === "globe" || mode.type === "ping-region") && <Marker coordinates={mode.location} fill={darkColor} stroke="#fff" strokeWidth={1}>
-            <g
-              fill="none"
-              stroke="rgba(56, 12, 12, 0.8)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              transform={`translate(${-12.0 * MARKER_SCALE}, ${-24 * MARKER_SCALE}) scale(${MARKER_SCALE})`}
-            >
-              <circle cx="12" cy="10" r="3" />
-              <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
-            </g>
-          </Marker>}
-        </>
-      )}
+                <g
+                  fill="none"
+                  stroke="rgba(56, 12, 12, 0.8)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  transform={`translate(${-12.0 * MARKER_SCALE}, ${-24 * MARKER_SCALE}) scale(${MARKER_SCALE})`}
+                >
+                  <circle cx="12" cy="10" r="3" />
+                  <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
+                </g>
+              </Marker>
+            )}
+          </>
+        )}
       </Geographies>
     </ComposableMap>
   );
