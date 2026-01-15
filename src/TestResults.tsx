@@ -1,6 +1,11 @@
 import { useEffect } from "react";
 import type { PingSummary } from "./ping_tester";
 
+// Convert camelCase to spaced words (e.g., "SouthAmerica" → "South America")
+function formatRegion(region: string): string {
+  return region.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
 type Props = {
   onClose?: () => void;
   pingResults: { [id: string]: PingSummary };
@@ -127,7 +132,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Region</span>
-                    <span className="text-sky-400 font-mono">{gl.region}</span>
+                    <span className="text-sky-400 font-mono">{formatRegion(gl.region)}</span>
                   </div>
                 </div>
               </div>
@@ -189,7 +194,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                     <span
                       className={`font-mono ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
                     >
-                      {best.region}
+                      {formatRegion(best.region)}
                     </span>
                   </div>
                 </div>
@@ -286,7 +291,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                   <div>
                     <div className="flex justify-between text-sm font-sans mb-2">
                       <span className="text-zinc-300">
-                        {best.region} Regional{" "}
+                        {formatRegion(best.region)} Regional{" "}
                         <span className="text-orange-400">[PREMIUM]</span>
                       </span>
                       <span className="text-emerald-400 font-mono font-bold tabular-nums text-lg">

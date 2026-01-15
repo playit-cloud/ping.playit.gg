@@ -9,6 +9,11 @@ import TestResults from "./TestResults";
 import AllTestsFailedModal from "./AllTestsFailedModal";
 import pingTargets from "./pingTargets";
 
+// Convert camelCase to spaced words (e.g., "SouthAmerica" → "South America")
+function formatRegion(name: string): string {
+  return name.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
 type TestState =
   | { type: "waiting" }
   | { type: "running"; currentTargetIndex: number }
@@ -397,7 +402,7 @@ function App() {
                     {/* Card Header */}
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-pixel text-white uppercase text-[10px] tracking-wide">
-                        {target.name}
+                        {formatRegion(target.name)}
                       </span>
                       {statusIndicator}
                       {badge}
