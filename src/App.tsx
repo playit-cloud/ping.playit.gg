@@ -310,8 +310,7 @@ function App() {
                     </span>
                   );
                 } else if (isActive) {
-                  cardClasses = "border-l-4 border-l-orange-500 border-t border-r border-b";
-                  cardStyle = { ...cardStyle, borderColor: 'var(--border-primary)' };
+                  cardClasses = "border-l-[6px] border-t border-r border-b";
                   statusIndicator = (
                     <span className="text-orange-400 text-[10px] font-pixel animate-pulse">
                       ● ACTIVE
