@@ -200,52 +200,66 @@ function App() {
     return () => clearTimeout(tid);
   }, [userLocation]);
 
+  const baseButtonClasses =
+    "px-3 py-0.5 text-white font-bold rounded-sm border-2 cursor-pointer text-sm hover:border-white";
+
   return (
-    <div>
+    <div className="bg-neutral-900 text-white/90 antialiased">
       {showResults && (
         <TestResults
           onClose={() => setShowResults(false)}
           pingResults={pingResults}
         />
       )}
-      <div className="header">
+      <div className="px-5 py-1 text-lg font-bold border-b-2 border-orange-500 flex items-center h-12 box-border">
         <a href="https://playit.gg">Playit.gg</a> Latency Tool
         <div className="grow" />
         {testState.type === "running" ? (
-          <button className="stop" onClick={stopTest}>
+          <button
+            className={`${baseButtonClasses} bg-red-600 border-red-600`}
+            onClick={stopTest}
+          >
             Stop Test
           </button>
         ) : (
-          <button onClick={() => startTest()}>Start Test</button>
+          <button
+            className={`${baseButtonClasses} bg-orange-500 border-orange-500`}
+            onClick={() => startTest()}
+          >
+            Start Test
+          </button>
         )}
         {testState.type === "complete" ? (
-          <button className="show-results" onClick={() => setShowResults(true)}>
+          <button
+            className={`${baseButtonClasses} bg-cyan-700 border-cyan-700 ml-2`}
+            onClick={() => setShowResults(true)}
+          >
             Show Results
           </button>
         ) : null}
       </div>
-      <div className="content">
-        <div className="body">
+      <div className="flex flex-row max-md:flex-col justify-start pt-0.5 max-h-[calc(100vh-50px)] max-md:max-h-none max-md:overflow-y-auto max-md:min-h-screen overflow-hidden box-border">
+        <div className="grow-[5] min-w-[400px] max-h-[745px]">
           <MapChart mode={mode} />
         </div>
-        <div className="details">
+        <div className="min-w-[250px] basis-[300px] max-md:basis-auto grow max-h-full max-md:max-h-none max-md:overflow-y-visible overflow-y-auto overflow-x-hidden">
           {pingTargets.map((target, i) => {
-            let regionCls = "region";
-            if (
+            const isActive =
               testState.type === "running" &&
-              testState.currentTargetIndex === i
-            ) {
-              regionCls = "region active";
-            } else if (
+              testState.currentTargetIndex === i;
+            const isSelected =
               testState.type === "complete" &&
-              testState.selectedTargetIndex === i
-            ) {
-              regionCls = "region selected";
-            } else if (
-              testState.type === "complete" &&
-              testState.bestTargetIndex === i
-            ) {
-              regionCls = "region best";
+              testState.selectedTargetIndex === i;
+            const isBest =
+              testState.type === "complete" && testState.bestTargetIndex === i;
+
+            let regionBgClass = "bg-neutral-800";
+            if (isActive) {
+              regionBgClass = "bg-amber-900";
+            } else if (isSelected) {
+              regionBgClass = "bg-indigo-900";
+            } else if (isBest) {
+              regionBgClass = "bg-green-900";
             }
 
             let dcName = "?";
@@ -264,58 +278,62 @@ function App() {
               return `${(Math.round(l * 10.0) / 10.0).toFixed(1)}/${(Math.round(l2 * 10.0) / 10.0).toFixed(1)}ms`;
             };
 
-            let style = undefined;
-            let onClick = undefined;
-
-            if (testState.type === "complete") {
-              style = { cursor: "pointer" };
-
-              onClick = () => {
-                setTestState((s: TestState): TestState => {
-                  if (s.type !== "complete") {
-                    return s;
+            const onClick =
+              testState.type === "complete"
+                ? () => {
+                    setTestState((s: TestState): TestState => {
+                      if (s.type !== "complete") {
+                        return s;
+                      }
+                      if (s.selectedTargetIndex === i) {
+                        return {
+                          type: "complete",
+                          selectedTargetIndex: undefined,
+                          bestTargetIndex: s.bestTargetIndex,
+                        };
+                      }
+                      return {
+                        type: "complete",
+                        selectedTargetIndex: i,
+                        bestTargetIndex: s.bestTargetIndex,
+                      };
+                    });
                   }
-                  if (s.selectedTargetIndex === i) {
-                    return {
-                      type: "complete",
-                      selectedTargetIndex: undefined,
-                      bestTargetIndex: s.bestTargetIndex,
-                    };
-                  }
-                  return {
-                    type: "complete",
-                    selectedTargetIndex: i,
-                    bestTargetIndex: s.bestTargetIndex,
-                  };
-                });
-              };
-            }
+                : undefined;
 
             return (
               <div
                 key={target.id}
-                className={regionCls}
-                style={style}
+                className={`w-full float-left ${regionBgClass} mb-1 border-b-2 border-neutral-500 p-1 ${testState.type === "complete" ? "cursor-pointer" : ""}`}
                 onClick={onClick}
               >
-                <div className="title">{target.name}</div>
-                <div className="data">
-                  <div className="attribute">
-                    <span>Datacenter: </span> {dcName}
+                <div className="font-bold">{target.name}</div>
+                <div className="text-sm">
+                  <div>
+                    <span className="font-bold text-neutral-400">
+                      Datacenter:{" "}
+                    </span>{" "}
+                    {dcName}
                   </div>
-                  <div className="attribute">
-                    <span>Average Latency: </span>{" "}
+                  <div>
+                    <span className="font-bold text-neutral-400">
+                      Average Latency:{" "}
+                    </span>{" "}
                     {pLatency(pingResults[target.id]?.latencyAvg)}
                   </div>
-                  <div className="attribute">
-                    <span>Latency Range (High/Low): </span>{" "}
+                  <div>
+                    <span className="font-bold text-neutral-400">
+                      Latency Range (High/Low):{" "}
+                    </span>{" "}
                     {pLatency(
                       pingResults[target.id]?.latencyMax,
                       pingResults[target.id]?.latencyMin,
                     )}
                   </div>
-                  <div className="attribute">
-                    <span>Latency Jitter: </span>{" "}
+                  <div>
+                    <span className="font-bold text-neutral-400">
+                      Latency Jitter:{" "}
+                    </span>{" "}
                     {pLatency(pingResults[target.id]?.latencyJitter)}
                   </div>
                 </div>

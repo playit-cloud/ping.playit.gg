@@ -25,6 +25,10 @@ export default function TestResults({ onClose, pingResults }: Props) {
     </a>
   );
 
+  const noteClasses = "ml-2.5 border-l-2 border-neutral-900 bg-neutral-900 p-2.5";
+  const noteOrangeClasses =
+    "ml-2.5 border-l-2 border-orange-600 bg-amber-950 p-2.5";
+
   let message = null;
   if (glSameDc || bestIsGl) {
     message = (
@@ -35,7 +39,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
           <strong>~{Math.round(gl.latencyAvg)}ms</strong> of latency. More
           specifically our <strong>{gl.dc}</strong> datacenter.
         </p>
-        <p className="note">
+        <p className={noteClasses}>
           When connecting to a game server made public by {playitLink}, your
           connection will not be faster if the host is using playit premium with
           a regional tunnel. Routing can be different for other users / players.
@@ -77,7 +81,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
           connecting you to our <strong>{best.dc}</strong> datacenter with{" "}
           <strong>~{Math.round(best.latencyAvg)}ms</strong> of latency.
         </p>
-        <p className="note orange">
+        <p className={noteOrangeClasses}>
           <a
             href="https://playit.gg/account/billing/shop/premium"
             target="_blank"
@@ -120,15 +124,21 @@ export default function TestResults({ onClose, pingResults }: Props) {
   }
 
   return (
-    <div className="test-results" onClick={onClose}>
+    <div
+      className="fixed inset-0 bg-white/40 z-50 flex flex-col items-center justify-center overflow-x-hidden p-5 box-border cursor-pointer h-screen"
+      onClick={onClose}
+    >
       <div
-        className="inner"
+        className="w-[800px] bg-neutral-800 max-w-full p-2.5 box-border border-4 border-black cursor-auto max-h-screen overflow-y-auto"
         onClick={(evt) => evt.stopPropagation()}
         onScroll={(evt) => evt.stopPropagation()}
       >
-        <h1>Ping Results</h1>
+        <h1 className="m-0 text-lg">Ping Results</h1>
         {message}
-        <button className="close" onClick={onClose}>
+        <button
+          className="px-3 py-0.5 bg-neutral-900 text-white font-bold rounded-sm border-2 border-black cursor-pointer text-sm hover:border-white"
+          onClick={onClose}
+        >
           close
         </button>
       </div>
