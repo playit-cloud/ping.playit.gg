@@ -118,7 +118,7 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-400 text-white font-pixel text-[10px] uppercase tracking-wide no-underline"
             >
-              [&gt;] JOIN DISCORD
+              JOIN DISCORD
             </a>
           </div>
 
@@ -128,7 +128,7 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
               onClick={onRetry}
               className="flex-1 px-4 py-3 bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
             >
-              [R] RETRY TEST
+              RETRY TEST
             </button>
             <button
               onClick={onClose}
