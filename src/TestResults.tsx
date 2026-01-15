@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { PingSummary } from "./ping_tester";
 
 type Props = {
@@ -6,6 +7,18 @@ type Props = {
 };
 
 export default function TestResults({ onClose, pingResults }: Props) {
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && onClose) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const values = Object.values(pingResults);
   // Filter out failed regions for calculations
   const successfulValues = values.filter((v) => !v.error);
