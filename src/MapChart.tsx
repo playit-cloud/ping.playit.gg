@@ -465,6 +465,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               const focusId =
                 (mode.type === "globe" && mode.highlightedDcd) ||
                 (mode.type === "dc-focus" && mode.dcId) ||
+                (mode.type === "ping-region" && mode.target.dc_id) ||
                 undefined;
 
               const isFocused = focusId === dc.id;
