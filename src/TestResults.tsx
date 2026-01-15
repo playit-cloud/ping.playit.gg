@@ -225,8 +225,12 @@ export default function TestResults({ onClose, pingResults }: Props) {
                     <div className="text-orange-100 font-pixel text-[8px] uppercase tracking-wider mb-2 flex items-center gap-2">
                       <span>▲</span> UPGRADE AVAILABLE
                     </div>
-                    <div className="text-white font-pixel text-sm md:text-base tracking-wide">
-                      SAVE <span className="font-mono">{savings}ms</span> — <span className="font-mono">{speedup}x</span> FASTER
+                    <div className="text-white flex items-center gap-2 flex-wrap">
+                      <span className="font-pixel text-sm md:text-base">SAVE</span>
+                      <span className="font-mono text-lg md:text-xl font-bold">{savings}ms</span>
+                      <span className="font-pixel text-sm md:text-base">—</span>
+                      <span className="font-mono text-lg md:text-xl font-bold">{speedup}x</span>
+                      <span className="font-pixel text-sm md:text-base">FASTER</span>
                     </div>
                   </div>
                   <a
