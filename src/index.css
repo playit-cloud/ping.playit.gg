@@ -1,215 +1,108 @@
+@import "tailwindcss";
+
+/* Theme custom properties */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1629;
+  --bg-card: #141b2d;
+  --border-primary: #1e2a45;
+  --border-accent: #f97316;
 }
 
-a {
-  font-weight: 500;
-  text-decoration: inherit;
-  color: rgb(254, 136, 10);
-  margin-right: 5px;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-p > a {
-  margin-right: auto;
+body,
+#root {
+  @apply m-0 p-0 min-w-80 min-h-screen;
+  background-color: var(--bg-primary);
 }
 
-a:hover {
-  color: rgb(191, 104, 10);
-  text-decoration: underline;
-}
-
-body, #root {
-  margin: 0;
-  padding: 0;
-  min-width: 320px;
-  min-height: 100vh;
+/* Pixel font for headers and titles */
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
 }
 
 #root {
-  display: flex;
-  flex-direction: column;
+  @apply flex flex-col;
 }
 
-.header {
-  padding: 5px 20px;
-  font-size: 18px;
-  font-weight: bold;
-  border-bottom: solid 2px rgb(254, 136, 10);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  box-sizing: border-box;
-  height: 50px;
+/* Retro/terminal style links */
+a {
+  @apply font-bold no-underline text-orange-500;
 }
 
-button {
-  padding: 2px 10px;
-  background: rgb(254, 136, 10);
-  color: white;
-  font-weight: bold;
-  border-radius: 2px;
-  outline: none;
-  border: solid 2px rgb(254, 136, 10);
-  cursor: pointer;
-  font-size: 14px;
+a:hover {
+  @apply text-orange-400;
 }
 
-button.stop {
-  background: rgb(223, 46, 46);
-  border-color: rgb(223, 46, 46);
+/* Custom scrollbar for the retro theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-button.show-results {
-  background: rgb(19, 98, 109);
-  border-color: rgb(13, 123, 143);
-  margin-left: 10px;
+::-webkit-scrollbar-track {
+  background-color: var(--bg-secondary);
 }
 
-button.close {
-  background: rgb(19, 19, 19);
-  border-color: rgb(0, 0, 0);
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-primary);
+  border: 2px solid var(--bg-secondary);
 }
 
-button:hover {
-  border-color: white;
+::-webkit-scrollbar-thumb:hover {
+  background-color: #2d3a5c;
 }
 
-.grow {
-  flex-grow: 1;
+/* Scanline effect for extra retro feel (optional, applied to specific elements) */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
 }
 
-.content {
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  padding-top: 2px;
-  max-height: calc(100vh - 50px);
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.content > .body {
-  flex-grow: 5;
-  min-width: 400px;
-  max-height: 745px;
-}
-
-.content > .details {
-  min-width: 250px;
-  flex-basis: 300px;
-  flex-grow: 1;
-  max-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.details > .region {
-  width: 100%;
-  float: left;
-  background: rgb(43, 43, 43);
-  margin-bottom: 5px;
-  border-bottom: solid 2px rgb(139, 139, 139);
-  padding: 5px;
-}
-
-.details > .region.active {
-  background: rgb(71, 58, 46);
-}
-
-.details > .region.selected {
-  background: rgb(58, 66, 113);
-}
-
-.details > .region.best {
-  background: rgb(46, 71, 49);
-}
-
-.region > .title {
-  font-weight: bold;
-}
-
-.region > .data {
-  font-size: 14px;
-}
-
-.attribute > span {
-  font-weight: bold;
-  color: rgb(148, 148, 148);
-}
-
-@media (max-width: 800px) {
-  .content {
-    flex-direction: column;
-    overflow-y: auto;
-    max-height: 10000px;
-    min-height: 100vh;
-    height: auto;
-  }
-
-  .content > .details {
-    overflow-y: hidden;
-    max-height: 10000px;
-    height: auto;
-    flex-basis: auto;
-    flex-grow: 1;
-  }
-}
-
-.test-results {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.4);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
+/* Retro CTA button with corner accents */
+.btn-retro-cta {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow-x: hidden;
-  padding: 20px;
-  box-sizing: border-box;
-  cursor: pointer;
-  height: 100vh;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--border-accent);
+  color: white;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 3px solid #0a0e1a;
+  outline: 3px solid var(--border-accent);
 }
 
-.test-results > .inner {
-  width: 800px;
-  background: rgb(39, 38, 38);
-  max-width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  border: solid 5px black;
-  cursor: auto;
-  max-height: 100vh;
-  overflow-y: auto;
+.btn-retro-cta:hover {
+  background-color: #fb923c;
+  color: white;
 }
 
-.test-results h1 {
-  margin: 0;
-  font-size: 18px;
+/* Blinking cursor effect */
+.blink-cursor::after {
+  content: "_";
+  animation: blink 1s step-end infinite;
 }
 
-p.note {
-  margin-left: 10px;
-  border-left: solid 2px rgb(19, 19, 19);
-  background: rgb(29, 28, 28);
-  padding: 10px;
-}
-
-p.note.orange {
-  border-color: rgb(255, 102, 0);
-  background: rgb(43, 19, 4);
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }

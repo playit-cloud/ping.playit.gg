@@ -193,18 +193,29 @@ const asiaGeoIds = [
   "PNG", // Papua New Guinea
 ];
 
-const orangeColor = "#FF8329";
-const blueColor = "#308DFC";
-const grayColor = "rgb(207, 41, 226)";
-const darkColor = "#212a33";
-const greenColor = "#0db97a";
-const redColor = "#D24A3B";
+// Retro gaming color palette - darker, more saturated
+const orangeColor = "#f97316"; // Orange for North America
+const blueColor = "#0ea5e9"; // Sky blue for Europe
+const magentaColor = "#d946ef"; // Fuchsia for India
+const darkColor = "#0a0e1a"; // Deep navy for background
+const greenColor = "#10b981"; // Emerald for Asia
+const redColor = "#ef4444"; // Red for South America
 
+// Muted versions for country fills (darker, less saturated)
 const regionColors: Record<string, string> = {
+  europe: "#1e3a5f", // Dark blue
+  "north-america": "#4a2c17", // Dark orange/brown
+  "south-america": "#4a1c1c", // Dark red
+  india: "#3d1f4a", // Dark purple
+  asia: "#1a3d32", // Dark green
+};
+
+// Bright accent colors for borders and highlights
+const regionAccentColors: Record<string, string> = {
   europe: blueColor,
   "north-america": orangeColor,
   "south-america": redColor,
-  india: grayColor,
+  india: magentaColor,
   asia: greenColor,
 };
 
@@ -338,19 +349,37 @@ const MapChart = ({ mode }: { mode: Mode }) => {
     return () => cancelAnimationFrame(tid);
   }, [targetProjection]);
 
+  // Determine the active region for highlighting
+  const activeRegion = mode.type === "ping-region" ? mode.target.region : null;
+
   return (
     <ComposableMap
-      projection={
-        mode.type === "globe" ? "geoConicEquidistant" : "geoConicEquidistant"
-      }
+      projection="geoConicEquidistant"
       projectionConfig={projection}
       width={800}
       height={600}
-      style={{ backgroundColor: "gray", width: "100%", height: "100%" }}
+      style={{ backgroundColor: "#0a0e1a", width: "100%", height: "100%" }}
     >
+      {/* Grid pattern definition for non-region countries */}
+      <defs>
+        <pattern
+          id="grid"
+          width="8"
+          height="8"
+          patternUnits="userSpaceOnUse"
+        >
+          <path
+            d="M 8 0 L 0 0 0 8"
+            fill="none"
+            stroke="#1e2a45"
+            strokeWidth="0.5"
+          />
+        </pattern>
+      </defs>
+
       <Geographies
         geography={geoUrl}
-        stroke={darken(0.2, orangeColor)}
+        stroke="#1e2a45"
         strokeWidth={0.5}
       >
         {({ geographies, projection }) => (
@@ -362,7 +391,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               const india = indiaGeoIds.indexOf(geo.id) !== -1;
               const asia = asiaGeoIds.indexOf(geo.id) !== -1;
 
-              let region;
+              let region: string | undefined;
               if (europe) {
                 region = "europe";
               } else if (northAmerica) {
@@ -375,95 +404,143 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                 region = "asia";
               }
 
-              let color = "url('#lines')";
-              if (region) {
-                color = region ? regionColors[region] : "url('#lines')";
-                if (
-                  mode.type === "ping-region" &&
-                  mode.target.region !== region
-                ) {
-                  color = mix(0.1, color, "gray");
+                // Default: dark with grid pattern for non-region countries
+                let fillColor = "#0f1629";
+                let strokeColor = "#1e2a45";
+
+                if (region) {
+                  // Use muted fill colors for regions
+                  fillColor = regionColors[region];
+                  strokeColor = regionAccentColors[region];
+
+                  // If we're pinging and this isn't the active region, dim it
+                  if (activeRegion && activeRegion !== region) {
+                    fillColor = mix(0.7, fillColor, "#0a0e1a");
+                    strokeColor = "#1e2a45";
+                  } else if (activeRegion === region) {
+                    // Brighten the active region slightly
+                    fillColor = lighten(0.05, fillColor);
+                  }
                 }
-              }
 
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={color}
-                  onClick={() => console.log(geo.properties.name)}
+                  fill={fillColor}
+                  stroke={strokeColor}
+                  strokeWidth={region ? 0.8 : 0.3}
                 />
               );
             })}
 
-            {mode.type != "globe" && (
-              <Line coordinates={points} stroke="#F53" strokeWidth={2} />
+            {/* Connection line with neon glow effect */}
+            {mode.type !== "globe" && (
+              <>
+                {/* Glow layer */}
+                <Line
+                  coordinates={points}
+                  stroke={orangeColor}
+                  strokeWidth={6}
+                  strokeOpacity={0.3}
+                />
+                {/* Main line */}
+                <Line
+                  coordinates={points}
+                  stroke={orangeColor}
+                  strokeWidth={2}
+                  strokeDasharray="8,4"
+                />
+              </>
             )}
 
+            {/* Datacenter markers */}
             {datacenters.map((dc) => {
               const projected = projection(dc.location as [number, number]);
               if (!projected) return null;
 
-              let color;
-              if (dc.region === "europe") {
-                color = blueColor;
-              } else if (dc.region === "north-america") {
-                color = orangeColor;
-              } else if (dc.region === "south-america") {
-                color = redColor;
-              } else if (dc.region === "india") {
-                color = grayColor;
-              } else if (dc.region === "asia") {
-                color = greenColor;
-              } else {
-                color = darkColor; // Default color for other regions
-              }
+              // Get the accent color for this DC's region
+              let accentColor = regionAccentColors[dc.region] || "#71717a";
 
               const focusId =
                 (mode.type === "globe" && mode.highlightedDcd) ||
                 (mode.type === "dc-focus" && mode.dcId) ||
+                (mode.type === "ping-region" && mode.target.dc_id) ||
                 undefined;
 
-              let stroke = lighten(0.3, color);
-              if (focusId && dc.id !== focusId) {
-                color = mix(0.3, color, "gray");
-                stroke = color;
+              const isFocused = focusId === dc.id;
+              const isDimmed = focusId && !isFocused;
+
+              if (isDimmed) {
+                accentColor = mix(0.6, accentColor, "#0a0e1a");
               }
 
               const [cx, cy] = projected;
               return (
-                <circle
-                  key={dc.name}
-                  cx={cx}
-                  cy={cy}
-                  r={5}
-                  fill={darken(0.2, color)}
-                  stroke={stroke}
-                  strokeWidth={1.5}
-                >
-                  <title>{dc.name}</title>
-                </circle>
+                <g key={dc.name}>
+                  {/* Outer glow for focused DC */}
+                  {isFocused && (
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={12}
+                      fill="none"
+                      stroke={accentColor}
+                      strokeWidth={2}
+                      strokeOpacity={0.4}
+                    />
+                  )}
+                  {/* DC marker - square for retro feel */}
+                  <rect
+                    x={cx - 4}
+                    y={cy - 4}
+                    width={8}
+                    height={8}
+                    fill={darken(0.2, accentColor)}
+                    stroke={isFocused ? "#fff" : lighten(0.2, accentColor)}
+                    strokeWidth={isFocused ? 2 : 1}
+                    style={{ transform: `rotate(45deg)`, transformOrigin: `${cx}px ${cy}px` }}
+                  >
+                    <title>{dc.name}</title>
+                  </rect>
+                </g>
               );
             })}
 
+            {/* User location marker */}
             {(mode.type === "globe" || mode.type === "ping-region") && (
-              <Marker
-                coordinates={mode.location}
-                fill={darkColor}
-                stroke="#fff"
-                strokeWidth={1}
-              >
-                <g
+              <Marker coordinates={mode.location}>
+                {/* Pulsing ring effect */}
+                <circle
+                  r={20}
                   fill="none"
-                  stroke="rgba(56, 12, 12, 0.8)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  transform={`translate(${-12.0 * MARKER_SCALE}, ${-24 * MARKER_SCALE}) scale(${MARKER_SCALE})`}
+                  stroke={orangeColor}
+                  strokeWidth={2}
+                  strokeOpacity={0.3}
                 >
-                  <circle cx="12" cy="10" r="3" />
-                  <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
-                </g>
+                  <animate
+                    attributeName="r"
+                    from="10"
+                    to="30"
+                    dur="1.5s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="stroke-opacity"
+                    from="0.5"
+                    to="0"
+                    dur="1.5s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+                {/* Inner marker */}
+                <circle
+                  r={8}
+                  fill={darkColor}
+                  stroke={orangeColor}
+                  strokeWidth={3}
+                />
+                <circle r={3} fill={orangeColor} />
               </Marker>
             )}
           </>
@@ -472,7 +549,5 @@ const MapChart = ({ mode }: { mode: Mode }) => {
     </ComposableMap>
   );
 };
-
-const MARKER_SCALE = 4.0;
 
 export default MapChart;
