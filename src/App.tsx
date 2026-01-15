@@ -217,7 +217,7 @@ function App() {
           <a href="https://playit.gg" className="flex items-center no-underline">
             <img src={playitLogo} alt="playit.gg" className="h-9" />
           </a>
-          <div className="hidden sm:flex items-center gap-2 text-sm" style={{ color: 'var(--border-primary)' }}>
+          <div className="hidden sm:flex items-center gap-2 text-sm text-zinc-500">
             <span className="text-orange-500">&gt;</span>
             <span className="text-cyan-400 font-pixel text-xs">LATENCY_TESTER</span>
             <span className="animate-pulse">_</span>
@@ -280,7 +280,7 @@ function App() {
         {/* Sidebar */}
         <div className="w-full lg:w-[420px] border-t-2 lg:border-t-0 overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
           <div className="p-3">
-            <div className="flex items-center gap-2 mb-3 text-xs uppercase tracking-widest border-b pb-2" style={{ color: 'var(--border-primary)', borderColor: 'var(--border-primary)' }}>
+            <div className="flex items-center gap-2 mb-3 text-xs uppercase tracking-widest border-b pb-2 text-zinc-400" style={{ borderColor: 'var(--border-primary)' }}>
               <span className="text-lime-400">//</span> <span className="font-pixel text-[10px]">SERVER REGIONS</span>
             </div>
             <div className="space-y-2">
@@ -389,32 +389,32 @@ function App() {
                     ) : hasResults ? (
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="p-2 border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
-                          <div className="font-pixel text-[8px] mb-1" style={{ color: 'var(--border-primary)' }}>PING</div>
+                          <div className="font-pixel text-[8px] mb-1 text-zinc-500">PING</div>
                           <div className="text-lg font-mono font-bold text-lime-400 tabular-nums">
                             {latency ? Math.round(latency) : "---"}
-                            <span className="text-xs ml-0.5" style={{ color: 'var(--border-primary)' }}>
+                            <span className="text-xs ml-0.5 text-zinc-500">
                               ms
                             </span>
                           </div>
                         </div>
                         <div className="p-2 border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
-                          <div className="font-pixel text-[8px] mb-1" style={{ color: 'var(--border-primary)' }}>JITTER</div>
+                          <div className="font-pixel text-[8px] mb-1 text-zinc-500">JITTER</div>
                           <div className="text-lg font-mono font-bold text-cyan-400 tabular-nums">
                             {jitter ? (Math.round(jitter * 10) / 10).toFixed(1) : "---"}
-                            <span className="text-xs ml-0.5" style={{ color: 'var(--border-primary)' }}>
+                            <span className="text-xs ml-0.5 text-zinc-500">
                               ms
                             </span>
                           </div>
                         </div>
                         <div className="p-2 border col-span-1" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
-                          <div className="font-pixel text-[8px] mb-1" style={{ color: 'var(--border-primary)' }}>DC</div>
+                          <div className="font-pixel text-[8px] mb-1 text-zinc-500">DC</div>
                           <div className="text-sm font-mono font-bold text-orange-400 truncate">
                             {dcName.split(" ")[0]}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="text-xs font-mono" style={{ color: 'var(--border-primary)' }}>
+                      <div className="text-xs font-mono text-zinc-500">
                         {testState.type === "waiting"
                           ? "> awaiting_test..."
                           : "> pending..."}

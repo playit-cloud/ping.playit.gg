@@ -53,7 +53,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
               <h1 className="font-pixel text-sm text-white m-0 uppercase tracking-wide">
                 PING RESULTS
               </h1>
-              <p className="font-mono text-xs mt-1 mb-0" style={{ color: 'var(--border-primary)' }}>
+              <p className="font-mono text-xs mt-1 mb-0 text-zinc-500">
                 // connection analysis complete
               </p>
             </div>
@@ -85,7 +85,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                 <div className="text-xl font-pixel text-red-400 mb-3">
                   CONNECTION FAILED
                 </div>
-                <div className="text-sm font-sans border-t pt-3" style={{ color: 'var(--border-primary)', borderColor: 'var(--border-primary)' }}>
+                <div className="text-sm font-sans border-t pt-3 text-zinc-400" style={{ borderColor: 'var(--border-primary)' }}>
                   <p className="m-0">
                     {gl?.error || "Unable to reach server. Please try again."}
                   </p>
@@ -97,23 +97,23 @@ export default function TestResults({ onClose, pingResults }: Props) {
                   <span className="text-sky-400 font-pixel text-[10px] uppercase tracking-wider">
                     GLOBAL ANYCAST
                   </span>
-                  <span className="font-pixel text-[8px] px-2.5 py-1 uppercase" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--border-primary)' }}>
+                  <span className="font-pixel text-[8px] px-2.5 py-1 uppercase text-zinc-400" style={{ backgroundColor: 'var(--bg-card)' }}>
                     FREE
                   </span>
                 </div>
                 <div className="text-5xl font-mono font-bold text-white mb-3 tabular-nums">
                   {Math.round(gl.latencyAvg)}
-                  <span className="text-xl font-normal ml-1" style={{ color: 'var(--border-primary)' }}>
+                  <span className="text-xl font-normal ml-1 text-zinc-500">
                     ms
                   </span>
                 </div>
                 <div className="text-sm font-sans space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--border-primary)' }}>
                   <div className="flex justify-between">
-                    <span style={{ color: 'var(--border-primary)' }}>Datacenter</span>
+                    <span className="text-zinc-500">Datacenter</span>
                     <span className="text-white font-mono">{gl.dc}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span style={{ color: 'var(--border-primary)' }}>Region</span>
+                    <span className="text-zinc-500">Region</span>
                     <span className="text-sky-400 font-mono">{gl.region}</span>
                   </div>
                 </div>
@@ -134,7 +134,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                 <div className="text-xl font-pixel text-red-400 mb-3">
                   ALL REGIONS FAILED
                 </div>
-                <div className="text-sm font-sans border-t pt-3" style={{ color: 'var(--border-primary)', borderColor: 'var(--border-primary)' }}>
+                <div className="text-sm font-sans border-t pt-3 text-zinc-400" style={{ borderColor: 'var(--border-primary)' }}>
                   <p className="m-0">
                     Unable to reach any regional servers. Please check your
                     connection and try again.
@@ -162,17 +162,17 @@ export default function TestResults({ onClose, pingResults }: Props) {
                   className={`text-5xl font-mono font-bold mb-3 tabular-nums ${glSameDc || bestIsGl ? "text-zinc-400" : "text-white"}`}
                 >
                   {Math.round(best.latencyAvg)}
-                  <span className="text-xl font-normal ml-1" style={{ color: 'var(--border-primary)' }}>
+                  <span className="text-xl font-normal ml-1 text-zinc-500">
                     ms
                   </span>
                 </div>
                 <div className="text-sm font-sans space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--border-primary)' }}>
                   <div className="flex justify-between">
-                    <span style={{ color: 'var(--border-primary)' }}>Datacenter</span>
+                    <span className="text-zinc-500">Datacenter</span>
                     <span className="text-white font-mono">{best.dc}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span style={{ color: 'var(--border-primary)' }}>Region</span>
+                    <span className="text-zinc-500">Region</span>
                     <span
                       className={`font-mono ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
                     >
@@ -241,7 +241,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
 
               {/* In-Game Latency Comparison */}
               <div className="border-2 p-5" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
-                <div className="font-pixel text-[10px] uppercase tracking-wider mb-5" style={{ color: 'var(--border-primary)' }}>
+                <div className="font-pixel text-[10px] uppercase tracking-wider mb-5 text-zinc-400">
                   <span className="text-orange-500">//</span> IN-GAME LATENCY
                   ESTIMATE
                 </div>
@@ -251,11 +251,11 @@ export default function TestResults({ onClose, pingResults }: Props) {
                     <div className="flex justify-between text-sm font-sans mb-2">
                       <span className="text-zinc-300">
                         Global Anycast{" "}
-                        <span style={{ color: 'var(--border-primary)' }}>[FREE]</span>
+                        <span className="text-zinc-500">[FREE]</span>
                       </span>
                       <span className="text-white font-mono font-bold tabular-nums text-lg">
                         {Math.round(glInGame)}
-                        <span className="text-sm ml-0.5" style={{ color: 'var(--border-primary)' }}>ms</span>
+                        <span className="text-sm ml-0.5 text-zinc-500">ms</span>
                       </span>
                     </div>
                     <div className="h-5 border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
@@ -274,7 +274,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
                       </span>
                       <span className="text-emerald-400 font-mono font-bold tabular-nums text-lg">
                         {Math.round(bestInGame)}
-                        <span className="text-sm ml-0.5" style={{ color: 'var(--border-primary)' }}>ms</span>
+                        <span className="text-sm ml-0.5 text-zinc-500">ms</span>
                       </span>
                     </div>
                     <div className="h-5 border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
@@ -302,7 +302,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
           {/* Info Note */}
           <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
             <p className="text-zinc-300 font-sans text-sm leading-relaxed m-0">
-              <span style={{ color: 'var(--border-primary)' }}>&gt;</span> Results show your
+              <span className="text-zinc-500">&gt;</span> Results show your
               connection to playit.gg servers. Actual in-game latency depends on
               both your connection and the game host's.{" "}
               <a
