@@ -203,7 +203,7 @@ function App() {
   }, [userLocation]);
 
   return (
-    <div className="bg-black text-gray-100 min-h-screen font-mono">
+    <div className="text-gray-100 min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {showResults && (
         <TestResults
           onClose={() => setShowResults(false)}
@@ -212,14 +212,14 @@ function App() {
       )}
 
       {/* Header */}
-      <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b-2 border-orange-500 bg-zinc-900 sticky top-0 z-10">
+      <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b-2 border-orange-500 sticky top-0 z-10" style={{ backgroundColor: 'var(--bg-secondary)' }}>
         <div className="flex items-center gap-4">
           <a href="https://playit.gg" className="flex items-center no-underline">
             <img src={playitLogo} alt="playit.gg" className="h-9" />
           </a>
-          <div className="hidden sm:flex items-center gap-2 text-zinc-500 text-sm">
+          <div className="hidden sm:flex items-center gap-2 text-sm" style={{ color: 'var(--border-primary)' }}>
             <span className="text-orange-500">&gt;</span>
-            <span className="text-cyan-400">LATENCY_TESTER</span>
+            <span className="text-cyan-400 font-pixel text-xs">LATENCY_TESTER</span>
             <span className="animate-pulse">_</span>
           </div>
         </div>
@@ -227,14 +227,14 @@ function App() {
         <div className="flex items-center gap-3">
           {testState.type === "running" ? (
             <button
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-500 border-2 border-red-400 text-white font-bold uppercase text-sm tracking-wide cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-500 border-2 border-red-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer transition-colors"
               onClick={stopTest}
             >
               [X] STOP
             </button>
           ) : (
             <button
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 text-white font-bold uppercase text-sm tracking-wide cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer transition-colors"
               onClick={() => startTest()}
             >
               [▶] RUN TEST
@@ -242,7 +242,7 @@ function App() {
           )}
           {testState.type === "complete" && (
             <button
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 border-2 border-cyan-400 text-white font-bold uppercase text-sm tracking-wide cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 border-2 border-cyan-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer transition-colors"
               onClick={() => setShowResults(true)}
             >
               [◆] RESULTS
@@ -254,11 +254,11 @@ function App() {
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row h-[calc(100vh-56px)]">
         {/* Map Area */}
-        <div className="flex-1 min-h-[300px] lg:min-h-0 relative border-r-2 border-zinc-800">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 relative border-r-2" style={{ borderColor: 'var(--border-primary)' }}>
           <MapChart mode={mode} />
           {/* Map overlay with status */}
           {testState.type === "running" && (
-            <div className="absolute top-3 left-3 bg-black/95 border-2 border-cyan-500 px-3 py-2 flex items-center gap-3">
+            <div className="absolute top-3 left-3 border-2 border-cyan-500 px-3 py-2 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-primary)', opacity: 0.95 }}>
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-cyan-400 animate-pulse"></span>
                 <span
@@ -270,7 +270,7 @@ function App() {
                   style={{ animationDelay: "0.4s" }}
                 ></span>
               </div>
-              <span className="text-sm text-cyan-400 font-mono uppercase">
+              <span className="text-xs text-cyan-400 font-pixel uppercase">
                 PINGING {pingTargets[testState.currentTargetIndex]?.name}...
               </span>
             </div>
@@ -278,10 +278,10 @@ function App() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-full lg:w-[420px] bg-zinc-900 border-t-2 lg:border-t-0 border-zinc-800 overflow-y-auto">
+        <div className="w-full lg:w-[420px] border-t-2 lg:border-t-0 overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
           <div className="p-3">
-            <div className="flex items-center gap-2 mb-3 text-zinc-500 text-xs uppercase tracking-widest border-b border-zinc-700 pb-2">
-              <span className="text-lime-400">//</span> SERVER REGIONS
+            <div className="flex items-center gap-2 mb-3 text-xs uppercase tracking-widest border-b pb-2" style={{ color: 'var(--border-primary)', borderColor: 'var(--border-primary)' }}>
+              <span className="text-lime-400">//</span> <span className="font-pixel text-[10px]">SERVER REGIONS</span>
             </div>
             <div className="space-y-2">
               {pingTargets.map((target, i) => {
@@ -297,35 +297,37 @@ function App() {
                 const hasResults = !!pingResults[target.id];
                 const hasFailed = !!pingResults[target.id]?.error;
 
-                let cardClasses = "bg-zinc-800 border-zinc-700 hover:border-zinc-500";
+                let cardStyle = { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' };
+                let cardClasses = "hover:border-opacity-80";
                 let statusIndicator = null;
                 let badge = null;
 
                 if (hasFailed) {
-                  cardClasses = "bg-zinc-800 border-l-4 border-l-red-500 border-t border-r border-b border-red-900";
+                  cardClasses = "border-l-4 border-l-red-500 border-t border-r border-b border-red-900";
                   badge = (
-                    <span className="text-xs bg-red-600 text-white px-2 py-0.5 font-bold uppercase">
+                    <span className="text-[10px] font-pixel bg-red-600 text-white px-2 py-0.5 uppercase">
                       FAILED
                     </span>
                   );
                 } else if (isActive) {
-                  cardClasses = "bg-zinc-800 border-l-4 border-l-orange-500 border-t border-r border-b border-zinc-600";
+                  cardClasses = "border-l-4 border-l-orange-500 border-t border-r border-b";
+                  cardStyle = { ...cardStyle, borderColor: 'var(--border-primary)' };
                   statusIndicator = (
-                    <span className="text-orange-400 text-xs font-bold animate-pulse">
+                    <span className="text-orange-400 text-[10px] font-pixel animate-pulse">
                       ● ACTIVE
                     </span>
                   );
                 } else if (isSelected) {
-                  cardClasses = "bg-zinc-800 border-l-4 border-l-cyan-400 border-t border-r border-b border-cyan-700";
+                  cardClasses = "border-l-4 border-l-cyan-400 border-t border-r border-b border-cyan-700";
                   badge = (
-                    <span className="text-xs bg-cyan-600 text-white px-2 py-0.5 font-bold uppercase">
+                    <span className="text-[10px] font-pixel bg-cyan-600 text-white px-2 py-0.5 uppercase">
                       SELECTED
                     </span>
                   );
                 } else if (isBest) {
-                  cardClasses = "bg-zinc-800 border-l-4 border-l-lime-400 border-t border-r border-b border-lime-800";
+                  cardClasses = "border-l-4 border-l-lime-400 border-t border-r border-b border-lime-800";
                   badge = (
-                    <span className="text-xs bg-lime-600 text-black px-2 py-0.5 font-bold uppercase">
+                    <span className="text-[10px] font-pixel bg-lime-600 text-black px-2 py-0.5 uppercase">
                       ★ BEST
                     </span>
                   );
@@ -366,12 +368,13 @@ function App() {
                 return (
                   <div
                     key={target.id}
-                    className={`border p-3 transition-all ${cardClasses} ${testState.type === "complete" ? "cursor-pointer hover:bg-zinc-700" : ""}`}
+                    className={`border p-3 transition-all ${cardClasses} ${testState.type === "complete" ? "cursor-pointer hover:brightness-110" : ""}`}
+                    style={cardStyle}
                     onClick={onClick}
                   >
                     {/* Card Header */}
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-white uppercase text-sm tracking-wide">
+                      <span className="font-pixel text-white uppercase text-[10px] tracking-wide">
                         {target.name}
                       </span>
                       {statusIndicator}
@@ -385,33 +388,33 @@ function App() {
                       </div>
                     ) : hasResults ? (
                       <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="bg-black/40 p-2 border border-zinc-700">
-                          <div className="text-zinc-500 mb-1">PING</div>
-                          <div className="text-lg font-bold text-lime-400 tabular-nums">
+                        <div className="p-2 border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
+                          <div className="font-pixel text-[8px] mb-1" style={{ color: 'var(--border-primary)' }}>PING</div>
+                          <div className="text-lg font-mono font-bold text-lime-400 tabular-nums">
                             {latency ? Math.round(latency) : "---"}
-                            <span className="text-xs text-zinc-500 ml-0.5">
+                            <span className="text-xs ml-0.5" style={{ color: 'var(--border-primary)' }}>
                               ms
                             </span>
                           </div>
                         </div>
-                        <div className="bg-black/40 p-2 border border-zinc-700">
-                          <div className="text-zinc-500 mb-1">JITTER</div>
-                          <div className="text-lg font-bold text-cyan-400 tabular-nums">
+                        <div className="p-2 border" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
+                          <div className="font-pixel text-[8px] mb-1" style={{ color: 'var(--border-primary)' }}>JITTER</div>
+                          <div className="text-lg font-mono font-bold text-cyan-400 tabular-nums">
                             {jitter ? (Math.round(jitter * 10) / 10).toFixed(1) : "---"}
-                            <span className="text-xs text-zinc-500 ml-0.5">
+                            <span className="text-xs ml-0.5" style={{ color: 'var(--border-primary)' }}>
                               ms
                             </span>
                           </div>
                         </div>
-                        <div className="bg-black/40 p-2 border border-zinc-700 col-span-1">
-                          <div className="text-zinc-500 mb-1">DC</div>
-                          <div className="text-sm font-bold text-orange-400 truncate">
+                        <div className="p-2 border col-span-1" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
+                          <div className="font-pixel text-[8px] mb-1" style={{ color: 'var(--border-primary)' }}>DC</div>
+                          <div className="text-sm font-mono font-bold text-orange-400 truncate">
                             {dcName.split(" ")[0]}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="text-xs text-zinc-600 font-mono">
+                      <div className="text-xs font-mono" style={{ color: 'var(--border-primary)' }}>
                         {testState.type === "waiting"
                           ? "> awaiting_test..."
                           : "> pending..."}

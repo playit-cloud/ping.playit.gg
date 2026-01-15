@@ -36,29 +36,32 @@ export default function TestResults({ onClose, pingResults }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 cursor-pointer font-mono"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 cursor-pointer"
+      style={{ backgroundColor: 'rgba(10, 14, 26, 0.95)' }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl bg-zinc-900 border-2 border-orange-500 cursor-auto max-h-[90vh] overflow-y-auto shadow-2xl shadow-orange-500/20"
+        className="w-full max-w-2xl border-2 border-orange-500 cursor-auto max-h-[90vh] overflow-y-auto shadow-2xl shadow-orange-500/20"
+        style={{ backgroundColor: 'var(--bg-secondary)' }}
         onClick={(evt) => evt.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b-2 border-zinc-700 flex items-center justify-between bg-zinc-800">
+        <div className="px-5 py-4 border-b-2 flex items-center justify-between" style={{ borderColor: 'var(--border-primary)', backgroundColor: 'var(--bg-card)' }}>
           <div className="flex items-center gap-3">
             <span className="text-orange-500 text-xl">◆</span>
             <div>
-              <h1 className="text-xl font-bold text-white m-0 uppercase tracking-wide">
+              <h1 className="font-pixel text-sm text-white m-0 uppercase tracking-wide">
                 PING RESULTS
               </h1>
-              <p className="text-zinc-400 text-xs mt-1 mb-0">
+              <p className="font-mono text-xs mt-1 mb-0" style={{ color: 'var(--border-primary)' }}>
                 // connection analysis complete
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-zinc-700 hover:bg-red-600 border-2 border-zinc-500 hover:border-red-400 text-zinc-200 hover:text-white font-bold text-sm cursor-pointer transition-colors"
+            className="px-4 py-1.5 hover:bg-red-600 border-2 hover:border-red-400 text-zinc-200 hover:text-white font-pixel text-[10px] cursor-pointer transition-colors"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}
           >
             [ESC]
           </button>
@@ -70,48 +73,48 @@ export default function TestResults({ onClose, pingResults }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Global Anycast Card */}
             {glFailed ? (
-              <div className="bg-zinc-950 border-l-4 border-l-red-500 border-t border-r border-b border-red-900 p-4">
+              <div className="border-l-4 border-l-red-500 border-t border-r border-b border-red-900 p-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-red-400 text-sm font-bold uppercase tracking-wider">
+                  <span className="text-red-400 font-pixel text-[10px] uppercase tracking-wider">
                     GLOBAL ANYCAST
                   </span>
-                  <span className="text-xs bg-red-600 text-white px-2.5 py-1 font-bold uppercase">
+                  <span className="font-pixel text-[8px] bg-red-600 text-white px-2.5 py-1 uppercase">
                     FAILED
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-red-400 mb-3">
+                <div className="text-xl font-pixel text-red-400 mb-3">
                   CONNECTION FAILED
                 </div>
-                <div className="text-sm text-zinc-400 border-t border-zinc-700 pt-3">
+                <div className="text-sm font-sans border-t pt-3" style={{ color: 'var(--border-primary)', borderColor: 'var(--border-primary)' }}>
                   <p className="m-0">
                     {gl?.error || "Unable to reach server. Please try again."}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="bg-zinc-950 border-l-4 border-l-sky-500 border-t border-r border-b border-zinc-700 p-4">
+              <div className="border-l-4 border-l-sky-500 border-t border-r border-b p-4" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-sky-400 text-sm font-bold uppercase tracking-wider">
+                  <span className="text-sky-400 font-pixel text-[10px] uppercase tracking-wider">
                     GLOBAL ANYCAST
                   </span>
-                  <span className="text-xs bg-zinc-700 text-zinc-200 px-2.5 py-1 font-bold uppercase">
+                  <span className="font-pixel text-[8px] px-2.5 py-1 uppercase" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--border-primary)' }}>
                     FREE
                   </span>
                 </div>
-                <div className="text-5xl font-bold text-white mb-3 tabular-nums">
+                <div className="text-5xl font-mono font-bold text-white mb-3 tabular-nums">
                   {Math.round(gl.latencyAvg)}
-                  <span className="text-xl text-zinc-400 ml-1 font-normal">
+                  <span className="text-xl font-normal ml-1" style={{ color: 'var(--border-primary)' }}>
                     ms
                   </span>
                 </div>
-                <div className="text-sm text-zinc-300 space-y-1.5 border-t border-zinc-700 pt-3">
+                <div className="text-sm font-sans space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--border-primary)' }}>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Datacenter</span>
-                    <span className="text-white">{gl.dc}</span>
+                    <span style={{ color: 'var(--border-primary)' }}>Datacenter</span>
+                    <span className="text-white font-mono">{gl.dc}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Region</span>
-                    <span className="text-sky-400">{gl.region}</span>
+                    <span style={{ color: 'var(--border-primary)' }}>Region</span>
+                    <span className="text-sky-400 font-mono">{gl.region}</span>
                   </div>
                 </div>
               </div>
@@ -119,19 +122,19 @@ export default function TestResults({ onClose, pingResults }: Props) {
 
             {/* Best Regional Card */}
             {bestFailed ? (
-              <div className="bg-zinc-950 border-l-4 border-l-red-500 border-t border-r border-b border-red-900 p-4">
+              <div className="border-l-4 border-l-red-500 border-t border-r border-b border-red-900 p-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-red-400 text-sm font-bold uppercase tracking-wider">
+                  <span className="text-red-400 font-pixel text-[10px] uppercase tracking-wider">
                     BEST REGIONAL
                   </span>
-                  <span className="text-xs bg-red-600 text-white px-2.5 py-1 font-bold uppercase">
+                  <span className="font-pixel text-[8px] bg-red-600 text-white px-2.5 py-1 uppercase">
                     FAILED
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-red-400 mb-3">
+                <div className="text-xl font-pixel text-red-400 mb-3">
                   ALL REGIONS FAILED
                 </div>
-                <div className="text-sm text-zinc-400 border-t border-zinc-700 pt-3">
+                <div className="text-sm font-sans border-t pt-3" style={{ color: 'var(--border-primary)', borderColor: 'var(--border-primary)' }}>
                   <p className="m-0">
                     Unable to reach any regional servers. Please check your
                     connection and try again.
@@ -140,39 +143,38 @@ export default function TestResults({ onClose, pingResults }: Props) {
               </div>
             ) : (
               <div
-                className={`bg-zinc-950 border-l-4 border-t border-r border-b border-zinc-700 p-4 ${glSameDc || bestIsGl ? "border-l-zinc-600" : "border-l-emerald-500"}`}
+                className={`border-l-4 border-t border-r border-b p-4 ${glSameDc || bestIsGl ? "border-l-zinc-600" : "border-l-emerald-500"}`}
+                style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}
               >
                 <div className="flex items-center justify-between mb-4">
                   <span
-                    className={`text-sm font-bold uppercase tracking-wider ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
+                    className={`font-pixel text-[10px] uppercase tracking-wider ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
                   >
                     BEST REGIONAL
                   </span>
                   {!(glSameDc || bestIsGl) && (
-                    <span className="text-xs bg-orange-600 text-white px-2.5 py-1 font-bold uppercase">
+                    <span className="font-pixel text-[8px] bg-orange-600 text-white px-2.5 py-1 uppercase">
                       PREMIUM
                     </span>
                   )}
                 </div>
                 <div
-                  className={`text-5xl font-bold mb-3 tabular-nums ${glSameDc || bestIsGl ? "text-zinc-400" : "text-white"}`}
+                  className={`text-5xl font-mono font-bold mb-3 tabular-nums ${glSameDc || bestIsGl ? "text-zinc-400" : "text-white"}`}
                 >
                   {Math.round(best.latencyAvg)}
-                  <span className="text-xl text-zinc-400 ml-1 font-normal">
+                  <span className="text-xl font-normal ml-1" style={{ color: 'var(--border-primary)' }}>
                     ms
                   </span>
                 </div>
-                <div className="text-sm text-zinc-300 space-y-1.5 border-t border-zinc-700 pt-3">
+                <div className="text-sm font-sans space-y-1.5 border-t pt-3" style={{ borderColor: 'var(--border-primary)' }}>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Datacenter</span>
-                    <span className="text-white">{best.dc}</span>
+                    <span style={{ color: 'var(--border-primary)' }}>Datacenter</span>
+                    <span className="text-white font-mono">{best.dc}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-zinc-500">Region</span>
+                    <span style={{ color: 'var(--border-primary)' }}>Region</span>
                     <span
-                      className={
-                        glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"
-                      }
+                      className={`font-mono ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
                     >
                       {best.region}
                     </span>
@@ -188,11 +190,11 @@ export default function TestResults({ onClose, pingResults }: Props) {
             <div className="bg-red-950/50 border-2 border-red-600 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-red-400 text-2xl">!</span>
-                <span className="text-red-300 font-bold uppercase text-base tracking-wide">
+                <span className="text-red-300 font-pixel text-[10px] uppercase tracking-wide">
                   CONNECTION ISSUES DETECTED
                 </span>
               </div>
-              <p className="text-zinc-300 text-sm m-0 leading-relaxed">
+              <p className="text-zinc-300 font-sans text-sm m-0 leading-relaxed">
                 Some servers could not be reached during testing. This may be
                 due to network issues or temporary server unavailability. Please
                 try running the test again.
@@ -203,11 +205,11 @@ export default function TestResults({ onClose, pingResults }: Props) {
             <div className="bg-emerald-950/50 border-2 border-emerald-600 p-5">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-emerald-400 text-2xl">✓</span>
-                <span className="text-emerald-300 font-bold uppercase text-base tracking-wide">
+                <span className="text-emerald-300 font-pixel text-[10px] uppercase tracking-wide">
                   OPTIMAL ROUTE DETECTED
                 </span>
               </div>
-              <p className="text-zinc-300 text-sm m-0 leading-relaxed">
+              <p className="text-zinc-300 font-sans text-sm m-0 leading-relaxed">
                 Your ISP is already routing you to the best available
                 datacenter. A regional tunnel would not improve your connection
                 speed.
@@ -220,43 +222,43 @@ export default function TestResults({ onClose, pingResults }: Props) {
               <div className="bg-gradient-to-r from-orange-700 to-orange-600 border-2 border-orange-400 p-5">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <div className="text-orange-100 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <div className="text-orange-100 font-pixel text-[8px] uppercase tracking-wider mb-2 flex items-center gap-2">
                       <span>▲</span> UPGRADE AVAILABLE
                     </div>
-                    <div className="text-white text-2xl font-bold tracking-wide">
-                      SAVE {savings}ms — {speedup}x FASTER
+                    <div className="text-white font-pixel text-sm md:text-base tracking-wide">
+                      SAVE <span className="font-mono">{savings}ms</span> — <span className="font-mono">{speedup}x</span> FASTER
                     </div>
                   </div>
                   <a
                     href="https://playit.gg/account/billing/shop/premium"
                     target="_blank"
-                    className="inline-flex items-center justify-center gap-2 bg-white text-orange-700 font-bold px-5 py-2.5 hover:bg-orange-100 transition-colors no-underline uppercase text-sm tracking-wide"
+                    className="btn-retro-cta blink-cursor"
                   >
-                    [★] GET PREMIUM
+                    GET PREMIUM
                   </a>
                 </div>
               </div>
 
               {/* In-Game Latency Comparison */}
-              <div className="bg-zinc-950 border-2 border-zinc-700 p-5">
-                <div className="text-zinc-300 text-sm font-bold uppercase tracking-wider mb-5">
+              <div className="border-2 p-5" style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--border-primary)' }}>
+                <div className="font-pixel text-[10px] uppercase tracking-wider mb-5" style={{ color: 'var(--border-primary)' }}>
                   <span className="text-orange-500">//</span> IN-GAME LATENCY
                   ESTIMATE
                 </div>
                 <div className="space-y-5">
                   {/* Global bar */}
                   <div>
-                    <div className="flex justify-between text-sm mb-2">
+                    <div className="flex justify-between text-sm font-sans mb-2">
                       <span className="text-zinc-300">
                         Global Anycast{" "}
-                        <span className="text-zinc-500">[FREE]</span>
+                        <span style={{ color: 'var(--border-primary)' }}>[FREE]</span>
                       </span>
-                      <span className="text-white font-bold tabular-nums text-lg">
+                      <span className="text-white font-mono font-bold tabular-nums text-lg">
                         {Math.round(glInGame)}
-                        <span className="text-zinc-400 text-sm ml-0.5">ms</span>
+                        <span className="text-sm ml-0.5" style={{ color: 'var(--border-primary)' }}>ms</span>
                       </span>
                     </div>
-                    <div className="h-5 bg-zinc-800 border border-zinc-600 overflow-hidden">
+                    <div className="h-5 border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
                       <div
                         className="h-full bg-sky-600"
                         style={{ width: "100%" }}
@@ -265,17 +267,17 @@ export default function TestResults({ onClose, pingResults }: Props) {
                   </div>
                   {/* Premium bar */}
                   <div>
-                    <div className="flex justify-between text-sm mb-2">
+                    <div className="flex justify-between text-sm font-sans mb-2">
                       <span className="text-zinc-300">
                         {best.region} Regional{" "}
                         <span className="text-orange-400">[PREMIUM]</span>
                       </span>
-                      <span className="text-emerald-400 font-bold tabular-nums text-lg">
+                      <span className="text-emerald-400 font-mono font-bold tabular-nums text-lg">
                         {Math.round(bestInGame)}
-                        <span className="text-zinc-400 text-sm ml-0.5">ms</span>
+                        <span className="text-sm ml-0.5" style={{ color: 'var(--border-primary)' }}>ms</span>
                       </span>
                     </div>
-                    <div className="h-5 bg-zinc-800 border border-zinc-600 overflow-hidden">
+                    <div className="h-5 border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
                       <div
                         className="h-full bg-emerald-500"
                         style={{
@@ -285,11 +287,11 @@ export default function TestResults({ onClose, pingResults }: Props) {
                     </div>
                   </div>
                 </div>
-                <div className="mt-5 pt-4 border-t-2 border-zinc-700 flex items-center justify-center gap-4">
-                  <span className="text-4xl font-bold text-orange-400 tabular-nums">
+                <div className="mt-5 pt-4 border-t-2 flex items-center justify-center gap-4" style={{ borderColor: 'var(--border-primary)' }}>
+                  <span className="text-4xl font-mono font-bold text-orange-400 tabular-nums">
                     {inGameSpeedup}x
                   </span>
-                  <span className="text-zinc-300 uppercase text-sm font-medium">
+                  <span className="text-zinc-300 font-pixel text-[10px] uppercase">
                     Less Latency
                   </span>
                 </div>
@@ -298,15 +300,15 @@ export default function TestResults({ onClose, pingResults }: Props) {
           )}
 
           {/* Info Note */}
-          <div className="bg-zinc-800 border border-zinc-600 p-4">
-            <p className="text-zinc-300 text-sm leading-relaxed m-0">
-              <span className="text-zinc-500">&gt;</span> Results show your
+          <div className="border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
+            <p className="text-zinc-300 font-sans text-sm leading-relaxed m-0">
+              <span style={{ color: 'var(--border-primary)' }}>&gt;</span> Results show your
               connection to playit.gg servers. Actual in-game latency depends on
               both your connection and the game host's.{" "}
               <a
                 href="https://playit.gg/support/how-to-lower-ping/"
                 target="_blank"
-                className="text-orange-400 hover:text-orange-300 hover:underline"
+                className="text-orange-400 hover:text-orange-300 hover:underline font-pixel text-[10px]"
               >
                 [LEARN MORE]
               </a>

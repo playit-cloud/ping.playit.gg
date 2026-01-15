@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Theme custom properties */
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1629;
+  --bg-card: #141b2d;
+  --border-primary: #1e2a45;
+  --border-accent: #f97316;
+}
+
 *,
 *::before,
 *::after {
@@ -8,7 +17,13 @@
 
 body,
 #root {
-  @apply m-0 p-0 min-w-80 min-h-screen bg-black;
+  @apply m-0 p-0 min-w-80 min-h-screen;
+  background-color: var(--bg-primary);
+}
+
+/* Pixel font for headers and titles */
+.font-pixel {
+  font-family: 'Press Start 2P', cursive;
 }
 
 #root {
@@ -31,15 +46,16 @@ a:hover {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-zinc-900;
+  background-color: var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-zinc-700 border-2 border-zinc-900;
+  background-color: var(--border-primary);
+  border: 2px solid var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-zinc-600;
+  background-color: #2d3a5c;
 }
 
 /* Scanline effect for extra retro feel (optional, applied to specific elements) */
@@ -55,4 +71,39 @@ a:hover {
     rgba(0, 0, 0, 0.1) 4px
   );
   pointer-events: none;
+}
+
+/* Retro CTA button with corner accents */
+.btn-retro-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--border-accent);
+  color: white;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 3px solid #0a0e1a;
+  outline: 3px solid var(--border-accent);
+  transition: all 0.15s ease;
+}
+
+.btn-retro-cta:hover {
+  background-color: #fb923c;
+  color: white;
+}
+
+/* Blinking cursor effect */
+.blink-cursor::after {
+  content: "_";
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }

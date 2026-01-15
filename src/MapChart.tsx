@@ -197,7 +197,7 @@ const asiaGeoIds = [
 const orangeColor = "#f97316"; // Orange for North America
 const blueColor = "#0ea5e9"; // Sky blue for Europe
 const magentaColor = "#d946ef"; // Fuchsia for India
-const darkColor = "#18181b"; // Zinc-900 for background
+const darkColor = "#0a0e1a"; // Deep navy for background
 const greenColor = "#10b981"; // Emerald for Asia
 const redColor = "#ef4444"; // Red for South America
 
@@ -358,7 +358,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
       projectionConfig={projection}
       width={800}
       height={600}
-      style={{ backgroundColor: "#09090b", width: "100%", height: "100%" }}
+      style={{ backgroundColor: "#0a0e1a", width: "100%", height: "100%" }}
     >
       {/* Grid pattern definition for non-region countries */}
       <defs>
@@ -371,7 +371,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
           <path
             d="M 8 0 L 0 0 0 8"
             fill="none"
-            stroke="#27272a"
+            stroke="#1e2a45"
             strokeWidth="0.5"
           />
         </pattern>
@@ -379,7 +379,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
 
       <Geographies
         geography={geoUrl}
-        stroke="#3f3f46"
+        stroke="#1e2a45"
         strokeWidth={0.5}
       >
         {({ geographies, projection }) => (
@@ -404,24 +404,24 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                 region = "asia";
               }
 
-              // Default: dark with grid pattern for non-region countries
-              let fillColor = "#18181b";
-              let strokeColor = "#3f3f46";
+                // Default: dark with grid pattern for non-region countries
+                let fillColor = "#0f1629";
+                let strokeColor = "#1e2a45";
 
-              if (region) {
-                // Use muted fill colors for regions
-                fillColor = regionColors[region];
-                strokeColor = regionAccentColors[region];
+                if (region) {
+                  // Use muted fill colors for regions
+                  fillColor = regionColors[region];
+                  strokeColor = regionAccentColors[region];
 
-                // If we're pinging and this isn't the active region, dim it
-                if (activeRegion && activeRegion !== region) {
-                  fillColor = mix(0.7, fillColor, "#09090b");
-                  strokeColor = "#27272a";
-                } else if (activeRegion === region) {
-                  // Brighten the active region slightly
-                  fillColor = lighten(0.05, fillColor);
+                  // If we're pinging and this isn't the active region, dim it
+                  if (activeRegion && activeRegion !== region) {
+                    fillColor = mix(0.7, fillColor, "#0a0e1a");
+                    strokeColor = "#1e2a45";
+                  } else if (activeRegion === region) {
+                    // Brighten the active region slightly
+                    fillColor = lighten(0.05, fillColor);
+                  }
                 }
-              }
 
               return (
                 <Geography
@@ -472,7 +472,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               const isDimmed = focusId && !isFocused;
 
               if (isDimmed) {
-                accentColor = mix(0.6, accentColor, "#09090b");
+                accentColor = mix(0.6, accentColor, "#0a0e1a");
               }
 
               const [cx, cy] = projected;
