@@ -8,17 +8,51 @@
 
 body,
 #root {
-  @apply m-0 p-0 min-w-80 min-h-screen;
+  @apply m-0 p-0 min-w-80 min-h-screen bg-black;
 }
 
 #root {
   @apply flex flex-col;
 }
 
+/* Retro/terminal style links */
 a {
-  @apply font-medium no-underline text-orange-500 transition-colors;
+  @apply font-bold no-underline text-orange-500 transition-colors;
 }
 
 a:hover {
   @apply text-orange-400;
+}
+
+/* Custom scrollbar for the retro theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-zinc-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-700 border-2 border-zinc-900;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-zinc-600;
+}
+
+/* Scanline effect for extra retro feel (optional, applied to specific elements) */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
 }

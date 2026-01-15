@@ -202,7 +202,7 @@ function App() {
   }, [userLocation]);
 
   return (
-    <div className="bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 text-white antialiased min-h-screen">
+    <div className="bg-black text-gray-100 min-h-screen font-mono">
       {showResults && (
         <TestResults
           onClose={() => setShowResults(false)}
@@ -211,106 +211,77 @@ function App() {
       )}
 
       {/* Header */}
-      <header className="px-4 md:px-6 h-16 flex items-center justify-between border-b border-neutral-700/50 bg-neutral-900/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <a
-            href="https://playit.gg"
-            className="flex items-center no-underline"
-          >
-            <img
-              src={playitLogo}
-              alt="playit.gg"
-              className="h-10"
-            />
+      <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b-2 border-orange-500 bg-zinc-900 sticky top-0 z-10">
+        <div className="flex items-center gap-4">
+          <a href="https://playit.gg" className="flex items-center no-underline">
+            <img src={playitLogo} alt="playit.gg" className="h-9" />
           </a>
-          <span className="text-neutral-500 hidden sm:inline">|</span>
-          <span className="text-neutral-400 text-sm hidden sm:inline">
-            Latency Tester
-          </span>
+          <div className="hidden sm:flex items-center gap-2 text-zinc-500 text-sm">
+            <span className="text-orange-500">&gt;</span>
+            <span className="text-cyan-400">LATENCY_TESTER</span>
+            <span className="animate-pulse">_</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {testState.type === "running" ? (
             <button
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-500 border-2 border-red-400 text-white font-bold uppercase text-sm tracking-wide cursor-pointer transition-colors"
               onClick={stopTest}
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-              Stop
+              [X] STOP
             </button>
           ) : (
             <button
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-medium rounded-lg transition-all cursor-pointer shadow-lg shadow-orange-500/20"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 text-white font-bold uppercase text-sm tracking-wide cursor-pointer transition-colors"
               onClick={() => startTest()}
             >
-              <svg
-                className="w-4 h-4"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              Start Test
+              [▶] RUN TEST
             </button>
           )}
           {testState.type === "complete" && (
             <button
-              className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 border-2 border-cyan-400 text-white font-bold uppercase text-sm tracking-wide cursor-pointer transition-colors"
               onClick={() => setShowResults(true)}
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-              Results
+              [◆] RESULTS
             </button>
           )}
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)]">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-56px)]">
         {/* Map Area */}
-        <div className="flex-1 min-h-[300px] lg:min-h-0 relative">
+        <div className="flex-1 min-h-[300px] lg:min-h-0 relative border-r-2 border-zinc-800">
           <MapChart mode={mode} />
           {/* Map overlay with status */}
           {testState.type === "running" && (
-            <div className="absolute top-4 left-4 bg-neutral-900/90 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center gap-3 border border-neutral-700">
-              <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse"></div>
-              <span className="text-sm text-neutral-200">
-                Testing {pingTargets[testState.currentTargetIndex]?.name}...
+            <div className="absolute top-3 left-3 bg-black/95 border-2 border-cyan-500 px-3 py-2 flex items-center gap-3">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-cyan-400 animate-pulse"></span>
+                <span
+                  className="w-2 h-2 bg-cyan-400 animate-pulse"
+                  style={{ animationDelay: "0.2s" }}
+                ></span>
+                <span
+                  className="w-2 h-2 bg-cyan-400 animate-pulse"
+                  style={{ animationDelay: "0.4s" }}
+                ></span>
+              </div>
+              <span className="text-sm text-cyan-400 font-mono uppercase">
+                PINGING {pingTargets[testState.currentTargetIndex]?.name}...
               </span>
             </div>
           )}
         </div>
 
         {/* Sidebar */}
-        <div className="w-full lg:w-96 bg-neutral-800/50 border-t lg:border-t-0 lg:border-l border-neutral-700/50 overflow-y-auto">
-          <div className="p-4">
-            <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-3">
-              Regions
-            </h2>
+        <div className="w-full lg:w-[420px] bg-zinc-900 border-t-2 lg:border-t-0 border-zinc-800 overflow-y-auto">
+          <div className="p-3">
+            <div className="flex items-center gap-2 mb-3 text-zinc-500 text-xs uppercase tracking-widest border-b border-zinc-700 pb-2">
+              <span className="text-lime-400">//</span> SERVER REGIONS
+            </div>
             <div className="space-y-2">
               {pingTargets.map((target, i) => {
                 const isActive =
@@ -324,39 +295,37 @@ function App() {
                   testState.bestTargetIndex === i;
                 const hasResults = !!pingResults[target.id];
 
-                let cardClasses =
-                  "bg-neutral-800/80 border-neutral-700 hover:border-neutral-600";
-                let statusDot = null;
+                let cardClasses = "bg-zinc-800 border-zinc-700 hover:border-zinc-500";
+                let statusIndicator = null;
                 let badge = null;
 
                 if (isActive) {
-                  cardClasses =
-                    "bg-gradient-to-r from-orange-950/80 to-amber-950/50 border-orange-700";
-                  statusDot = (
-                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                  cardClasses = "bg-zinc-800 border-l-4 border-l-orange-500 border-t border-r border-b border-zinc-600";
+                  statusIndicator = (
+                    <span className="text-orange-400 text-xs font-bold animate-pulse">
+                      ● ACTIVE
+                    </span>
                   );
                 } else if (isSelected) {
-                  cardClasses =
-                    "bg-gradient-to-r from-blue-950/80 to-indigo-950/50 border-blue-600 ring-1 ring-blue-500/30";
+                  cardClasses = "bg-zinc-800 border-l-4 border-l-cyan-400 border-t border-r border-b border-cyan-700";
                   badge = (
-                    <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-medium">
-                      Selected
+                    <span className="text-xs bg-cyan-600 text-white px-2 py-0.5 font-bold uppercase">
+                      SELECTED
                     </span>
                   );
                 } else if (isBest) {
-                  cardClasses =
-                    "bg-gradient-to-r from-green-950/80 to-emerald-950/50 border-green-700";
+                  cardClasses = "bg-zinc-800 border-l-4 border-l-lime-400 border-t border-r border-b border-lime-800";
                   badge = (
-                    <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded font-medium">
-                      Best
+                    <span className="text-xs bg-lime-600 text-black px-2 py-0.5 font-bold uppercase">
+                      ★ BEST
                     </span>
                   );
                 }
 
-                let dcName = "—";
+                let dcName = "---";
                 const dcId = pingResults[target.id]?.dc_id;
                 if (dcId) {
-                  dcName = datacenters.find((d) => d.id === dcId)?.name || "—";
+                  dcName = datacenters.find((d) => d.id === dcId)?.name || "---";
                 }
 
                 const latency = pingResults[target.id]?.latencyAvg;
@@ -388,59 +357,51 @@ function App() {
                 return (
                   <div
                     key={target.id}
-                    className={`rounded-lg border p-4 transition-all ${cardClasses} ${testState.type === "complete" ? "cursor-pointer" : ""}`}
+                    className={`border p-3 transition-all ${cardClasses} ${testState.type === "complete" ? "cursor-pointer hover:bg-zinc-700" : ""}`}
                     onClick={onClick}
                   >
                     {/* Card Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        {statusDot}
-                        <span className="font-semibold text-white">
-                          {target.name}
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-white uppercase text-sm tracking-wide">
+                        {target.name}
+                      </span>
+                      {statusIndicator}
                       {badge}
                     </div>
 
-                    {/* Stats Grid */}
+                    {/* Stats */}
                     {hasResults ? (
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-neutral-500 mb-0.5">
-                            Latency
-                          </div>
-                          <div className="text-xl font-bold text-white">
-                            {latency ? `${Math.round(latency)}` : "—"}
-                            <span className="text-sm font-normal text-neutral-400 ml-0.5">
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="bg-black/40 p-2 border border-zinc-700">
+                          <div className="text-zinc-500 mb-1">PING</div>
+                          <div className="text-lg font-bold text-lime-400 tabular-nums">
+                            {latency ? Math.round(latency) : "---"}
+                            <span className="text-xs text-zinc-500 ml-0.5">
                               ms
                             </span>
                           </div>
                         </div>
-                        <div>
-                          <div className="text-xs text-neutral-500 mb-0.5">
-                            Jitter
-                          </div>
-                          <div className="text-xl font-bold text-white">
-                            {jitter ? `${Math.round(jitter * 10) / 10}` : "—"}
-                            <span className="text-sm font-normal text-neutral-400 ml-0.5">
+                        <div className="bg-black/40 p-2 border border-zinc-700">
+                          <div className="text-zinc-500 mb-1">JITTER</div>
+                          <div className="text-lg font-bold text-cyan-400 tabular-nums">
+                            {jitter ? (Math.round(jitter * 10) / 10).toFixed(1) : "---"}
+                            <span className="text-xs text-zinc-500 ml-0.5">
                               ms
                             </span>
                           </div>
                         </div>
-                        <div className="col-span-2">
-                          <div className="text-xs text-neutral-500 mb-0.5">
-                            Datacenter
-                          </div>
-                          <div className="text-sm text-neutral-300">
-                            {dcName}
+                        <div className="bg-black/40 p-2 border border-zinc-700 col-span-1">
+                          <div className="text-zinc-500 mb-1">DC</div>
+                          <div className="text-sm font-bold text-orange-400 truncate">
+                            {dcName.split(" ")[0]}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="text-sm text-neutral-500 italic">
+                      <div className="text-xs text-zinc-600 font-mono">
                         {testState.type === "waiting"
-                          ? "Waiting for test..."
-                          : "Pending..."}
+                          ? "> awaiting_test..."
+                          : "> pending..."}
                       </div>
                     )}
                   </div>
