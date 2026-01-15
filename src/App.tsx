@@ -186,6 +186,12 @@ function App() {
         },
       });
 
+      // Always store the final result (including failures)
+      setPingResults((r) => ({
+        [targetDetails.id]: result,
+        ...r,
+      }));
+
       // Skip failed results when determining best
       if (!result.error) {
         if (bestLatency === 0 || result.latencyAvg < bestLatency) {
