@@ -24,6 +24,7 @@ export type PingSummary = {
   latencyAvg: number;
   latencyJitter: number;
   clientIpChanged: boolean;
+  error?: string; // Error message if ping failed after retries
 };
 
 export const testPingHead = async (
@@ -93,62 +94,99 @@ export const testPings = async (
   target: string,
   opts?: TestPingsOpts,
 ): Promise<PingSummary> => {
-  const initPingTest = await testPing(target, opts?.signal);
+  const MAX_RETRIES = 2;
+  let lastError: Error | null = null;
 
-  const latencies: number[] = [];
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const initPingTest = await testPing(target, opts?.signal);
 
-  const testTime = 1000;
-  const testStart = Date.now();
-  const maxPings = 100000;
-  const minPings = 10;
+      const latencies: number[] = [];
 
-  const current = {
-    dc: initPingTest.dc,
-    dc_id: initPingTest.dc_id,
-    region: initPingTest.region,
-    serverIp: initPingTest.serverIp,
-    clientIp: initPingTest.clientIp,
-    latencyMax: initPingTest.latency,
-    latencyMin: initPingTest.latency,
-    latencyAvg: initPingTest.latency,
-    latencyJitter: 0,
-    clientIpChanged: false,
-  };
+      const testTime = 1000;
+      const testStart = Date.now();
+      const maxPings = 100000;
+      const minPings = 10;
 
-  for (let i = 0; i < maxPings; i++) {
-    latencies.push(await testPingHead(target, opts?.signal));
+      const current = {
+        dc: initPingTest.dc,
+        dc_id: initPingTest.dc_id,
+        region: initPingTest.region,
+        serverIp: initPingTest.serverIp,
+        clientIp: initPingTest.clientIp,
+        latencyMax: initPingTest.latency,
+        latencyMin: initPingTest.latency,
+        latencyAvg: initPingTest.latency,
+        latencyJitter: 0,
+        clientIpChanged: false,
+      };
 
-    /* update current */
-    {
-      latencies.sort((a, b) => a - b);
-      const use = latencies.slice(0, Math.max(20, latencies.length / 2));
+      for (let i = 0; i < maxPings; i++) {
+        latencies.push(await testPingHead(target, opts?.signal));
 
-      current.latencyMax = Math.max(...use);
-      current.latencyMin = Math.min(...use);
-      current.latencyAvg =
-        use.reduce((sum, latency) => sum + latency, 0) / use.length;
-      current.latencyJitter = Math.sqrt(
-        use.reduce(
-          (sum, latency) => sum + Math.pow(latency - current.latencyAvg, 2),
-          0,
-        ) / use.length,
+        /* update current */
+        {
+          latencies.sort((a, b) => a - b);
+          const use = latencies.slice(0, Math.max(20, latencies.length / 2));
+
+          current.latencyMax = Math.max(...use);
+          current.latencyMin = Math.min(...use);
+          current.latencyAvg =
+            use.reduce((sum, latency) => sum + latency, 0) / use.length;
+          current.latencyJitter = Math.sqrt(
+            use.reduce(
+              (sum, latency) => sum + Math.pow(latency - current.latencyAvg, 2),
+              0,
+            ) / use.length,
+          );
+
+          opts?.onUpdate?.(current);
+        }
+
+        const age = Date.now() - testStart;
+
+        if (testTime < age && minPings <= latencies.length) {
+          break;
+        }
+
+        if (testTime * 5 < age) {
+          break;
+        }
+      }
+
+      current.clientIpChanged =
+        (await testPing(target)).clientIp != initPingTest.clientIp;
+      return current;
+    } catch (e) {
+      // Don't retry if the request was aborted
+      if (e instanceof DOMException && e.name === "AbortError") {
+        throw e;
+      }
+
+      lastError = e instanceof Error ? e : new Error(String(e));
+      console.log(
+        `Ping attempt ${attempt + 1}/${MAX_RETRIES + 1} failed for ${target}:`,
+        lastError.message,
       );
 
-      opts?.onUpdate?.(current);
-    }
-
-    const age = Date.now() - testStart;
-
-    if (testTime < age && minPings <= latencies.length) {
-      break;
-    }
-
-    if (testTime * 5 < age) {
-      break;
+      if (attempt < MAX_RETRIES) {
+        await new Promise((r) => setTimeout(r, 500)); // Brief delay before retry
+      }
     }
   }
 
-  current.clientIpChanged =
-    (await testPing(target)).clientIp != initPingTest.clientIp;
-  return current;
+  // All retries failed - return failure state
+  return {
+    dc: "",
+    dc_id: 0,
+    region: "",
+    serverIp: "",
+    clientIp: "",
+    latencyMax: 0,
+    latencyMin: 0,
+    latencyAvg: 0,
+    latencyJitter: 0,
+    clientIpChanged: false,
+    error: lastError?.message || "Connection failed",
+  };
 };

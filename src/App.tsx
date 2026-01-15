@@ -172,11 +172,12 @@ function App() {
         },
       });
 
-      if (i === 0) {
-        bestLatency = result.latencyAvg;
-      } else if (result.latencyAvg < bestLatency) {
-        bestIndex = i;
-        bestLatency = result.latencyAvg;
+      // Skip failed results when determining best
+      if (!result.error) {
+        if (bestLatency === 0 || result.latencyAvg < bestLatency) {
+          bestIndex = i;
+          bestLatency = result.latencyAvg;
+        }
       }
     }
 
@@ -294,12 +295,20 @@ function App() {
                   testState.type === "complete" &&
                   testState.bestTargetIndex === i;
                 const hasResults = !!pingResults[target.id];
+                const hasFailed = !!pingResults[target.id]?.error;
 
                 let cardClasses = "bg-zinc-800 border-zinc-700 hover:border-zinc-500";
                 let statusIndicator = null;
                 let badge = null;
 
-                if (isActive) {
+                if (hasFailed) {
+                  cardClasses = "bg-zinc-800 border-l-4 border-l-red-500 border-t border-r border-b border-red-900";
+                  badge = (
+                    <span className="text-xs bg-red-600 text-white px-2 py-0.5 font-bold uppercase">
+                      FAILED
+                    </span>
+                  );
+                } else if (isActive) {
                   cardClasses = "bg-zinc-800 border-l-4 border-l-orange-500 border-t border-r border-b border-zinc-600";
                   statusIndicator = (
                     <span className="text-orange-400 text-xs font-bold animate-pulse">
@@ -370,7 +379,11 @@ function App() {
                     </div>
 
                     {/* Stats */}
-                    {hasResults ? (
+                    {hasFailed ? (
+                      <div className="text-xs text-red-400 font-mono">
+                        ✕ {pingResults[target.id].error}
+                      </div>
+                    ) : hasResults ? (
                       <div className="grid grid-cols-3 gap-2 text-xs">
                         <div className="bg-black/40 p-2 border border-zinc-700">
                           <div className="text-zinc-500 mb-1">PING</div>

@@ -7,23 +7,32 @@ type Props = {
 
 export default function TestResults({ onClose, pingResults }: Props) {
   const values = Object.values(pingResults);
-  const bestLatency = Math.min(...values.map((v) => v.latencyAvg));
+  // Filter out failed regions for calculations
+  const successfulValues = values.filter((v) => !v.error);
+  const bestLatency =
+    successfulValues.length > 0
+      ? Math.min(...successfulValues.map((v) => v.latencyAvg))
+      : 0;
 
   const gl = pingResults["GlobalAnycast"];
-  const best = values.find((v) => v.latencyAvg === bestLatency);
+  const glFailed = !gl || !!gl.error;
+  const best = successfulValues.find((v) => v.latencyAvg === bestLatency);
+  const bestFailed = !best;
 
-  if (!best) {
-    throw new Error("cannot find best DC");
-  }
+  // Safe values for calculations (fallback to 0 if failed)
+  const glLatency = glFailed ? 0 : gl.latencyAvg;
+  const bestLatencyVal = bestFailed ? 0 : best.latencyAvg;
 
-  const bestIsGl = pingResults["GlobalAnycast"] === best;
-  const glSameDc = gl.dc_id == best?.dc_id;
+  const bestIsGl = !glFailed && !bestFailed && gl === best;
+  const glSameDc = !glFailed && !bestFailed && gl.dc_id === best.dc_id;
 
-  const glInGame = gl.latencyAvg + best.latencyAvg;
-  const bestInGame = best.latencyAvg * 2;
-  const savings = Math.round(gl.latencyAvg - best.latencyAvg);
-  const speedup = (gl.latencyAvg / best.latencyAvg).toFixed(1);
-  const inGameSpeedup = (glInGame / bestInGame).toFixed(1);
+  const glInGame = glLatency + bestLatencyVal;
+  const bestInGame = bestLatencyVal * 2;
+  const savings = Math.round(glLatency - bestLatencyVal);
+  const speedup =
+    bestLatencyVal > 0 ? (glLatency / bestLatencyVal).toFixed(1) : "0";
+  const inGameSpeedup =
+    bestInGame > 0 ? (glInGame / bestInGame).toFixed(1) : "0";
 
   return (
     <div
@@ -60,78 +69,136 @@ export default function TestResults({ onClose, pingResults }: Props) {
           {/* Comparison Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Global Anycast Card */}
-            <div className="bg-zinc-950 border-l-4 border-l-sky-500 border-t border-r border-b border-zinc-700 p-4">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sky-400 text-sm font-bold uppercase tracking-wider">
-                  GLOBAL ANYCAST
-                </span>
-                <span className="text-xs bg-zinc-700 text-zinc-200 px-2.5 py-1 font-bold uppercase">
-                  FREE
-                </span>
-              </div>
-              <div className="text-5xl font-bold text-white mb-3 tabular-nums">
-                {Math.round(gl.latencyAvg)}
-                <span className="text-xl text-zinc-400 ml-1 font-normal">
-                  ms
-                </span>
-              </div>
-              <div className="text-sm text-zinc-300 space-y-1.5 border-t border-zinc-700 pt-3">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Datacenter</span>
-                  <span className="text-white">{gl.dc}</span>
+            {glFailed ? (
+              <div className="bg-zinc-950 border-l-4 border-l-red-500 border-t border-r border-b border-red-900 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-red-400 text-sm font-bold uppercase tracking-wider">
+                    GLOBAL ANYCAST
+                  </span>
+                  <span className="text-xs bg-red-600 text-white px-2.5 py-1 font-bold uppercase">
+                    FAILED
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Region</span>
-                  <span className="text-sky-400">{gl.region}</span>
+                <div className="text-2xl font-bold text-red-400 mb-3">
+                  CONNECTION FAILED
+                </div>
+                <div className="text-sm text-zinc-400 border-t border-zinc-700 pt-3">
+                  <p className="m-0">
+                    {gl?.error || "Unable to reach server. Please try again."}
+                  </p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-zinc-950 border-l-4 border-l-sky-500 border-t border-r border-b border-zinc-700 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-sky-400 text-sm font-bold uppercase tracking-wider">
+                    GLOBAL ANYCAST
+                  </span>
+                  <span className="text-xs bg-zinc-700 text-zinc-200 px-2.5 py-1 font-bold uppercase">
+                    FREE
+                  </span>
+                </div>
+                <div className="text-5xl font-bold text-white mb-3 tabular-nums">
+                  {Math.round(gl.latencyAvg)}
+                  <span className="text-xl text-zinc-400 ml-1 font-normal">
+                    ms
+                  </span>
+                </div>
+                <div className="text-sm text-zinc-300 space-y-1.5 border-t border-zinc-700 pt-3">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Datacenter</span>
+                    <span className="text-white">{gl.dc}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Region</span>
+                    <span className="text-sky-400">{gl.region}</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Best Regional Card */}
-            <div
-              className={`bg-zinc-950 border-l-4 border-t border-r border-b border-zinc-700 p-4 ${glSameDc || bestIsGl ? "border-l-zinc-600" : "border-l-emerald-500"}`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span
-                  className={`text-sm font-bold uppercase tracking-wider ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
-                >
-                  BEST REGIONAL
-                </span>
-                {!(glSameDc || bestIsGl) && (
-                  <span className="text-xs bg-orange-600 text-white px-2.5 py-1 font-bold uppercase">
-                    PREMIUM
+            {bestFailed ? (
+              <div className="bg-zinc-950 border-l-4 border-l-red-500 border-t border-r border-b border-red-900 p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-red-400 text-sm font-bold uppercase tracking-wider">
+                    BEST REGIONAL
                   </span>
-                )}
+                  <span className="text-xs bg-red-600 text-white px-2.5 py-1 font-bold uppercase">
+                    FAILED
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-red-400 mb-3">
+                  ALL REGIONS FAILED
+                </div>
+                <div className="text-sm text-zinc-400 border-t border-zinc-700 pt-3">
+                  <p className="m-0">
+                    Unable to reach any regional servers. Please check your
+                    connection and try again.
+                  </p>
+                </div>
               </div>
+            ) : (
               <div
-                className={`text-5xl font-bold mb-3 tabular-nums ${glSameDc || bestIsGl ? "text-zinc-400" : "text-white"}`}
+                className={`bg-zinc-950 border-l-4 border-t border-r border-b border-zinc-700 p-4 ${glSameDc || bestIsGl ? "border-l-zinc-600" : "border-l-emerald-500"}`}
               >
-                {Math.round(best.latencyAvg)}
-                <span className="text-xl text-zinc-400 ml-1 font-normal">
-                  ms
-                </span>
-              </div>
-              <div className="text-sm text-zinc-300 space-y-1.5 border-t border-zinc-700 pt-3">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Datacenter</span>
-                  <span className="text-white">{best.dc}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Region</span>
+                <div className="flex items-center justify-between mb-4">
                   <span
-                    className={
-                      glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"
-                    }
+                    className={`text-sm font-bold uppercase tracking-wider ${glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"}`}
                   >
-                    {best.region}
+                    BEST REGIONAL
+                  </span>
+                  {!(glSameDc || bestIsGl) && (
+                    <span className="text-xs bg-orange-600 text-white px-2.5 py-1 font-bold uppercase">
+                      PREMIUM
+                    </span>
+                  )}
+                </div>
+                <div
+                  className={`text-5xl font-bold mb-3 tabular-nums ${glSameDc || bestIsGl ? "text-zinc-400" : "text-white"}`}
+                >
+                  {Math.round(best.latencyAvg)}
+                  <span className="text-xl text-zinc-400 ml-1 font-normal">
+                    ms
                   </span>
                 </div>
+                <div className="text-sm text-zinc-300 space-y-1.5 border-t border-zinc-700 pt-3">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Datacenter</span>
+                    <span className="text-white">{best.dc}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500">Region</span>
+                    <span
+                      className={
+                        glSameDc || bestIsGl ? "text-zinc-400" : "text-emerald-400"
+                      }
+                    >
+                      {best.region}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Conditional Content */}
-          {glSameDc || bestIsGl ? (
+          {glFailed || bestFailed ? (
+            /* Connection errors occurred */
+            <div className="bg-red-950/50 border-2 border-red-600 p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-red-400 text-2xl">!</span>
+                <span className="text-red-300 font-bold uppercase text-base tracking-wide">
+                  CONNECTION ISSUES DETECTED
+                </span>
+              </div>
+              <p className="text-zinc-300 text-sm m-0 leading-relaxed">
+                Some servers could not be reached during testing. This may be
+                due to network issues or temporary server unavailability. Please
+                try running the test again.
+              </p>
+            </div>
+          ) : glSameDc || bestIsGl ? (
             /* Already optimal routing */
             <div className="bg-emerald-950/50 border-2 border-emerald-600 p-5">
               <div className="flex items-center gap-3 mb-3">
