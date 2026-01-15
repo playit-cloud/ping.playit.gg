@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./index.css";
 import MapChart, { type Mode } from "./MapChart";
 import datacenters from "./pingDcs";
+import playitLogo from "./images/playit-logo.png";
 
 import { testPings, type PingSummary } from "./ping_tester";
 import TestResults from "./TestResults";
@@ -200,146 +201,253 @@ function App() {
     return () => clearTimeout(tid);
   }, [userLocation]);
 
-  const baseButtonClasses =
-    "px-3 py-0.5 text-white font-bold rounded-sm border-2 cursor-pointer text-sm hover:border-white";
-
   return (
-    <div className="bg-neutral-900 text-white/90 antialiased">
+    <div className="bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 text-white antialiased min-h-screen">
       {showResults && (
         <TestResults
           onClose={() => setShowResults(false)}
           pingResults={pingResults}
         />
       )}
-      <div className="px-5 py-1 text-lg font-bold border-b-2 border-orange-500 flex items-center h-12 box-border">
-        <a href="https://playit.gg">Playit.gg</a> Latency Tool
-        <div className="grow" />
-        {testState.type === "running" ? (
-          <button
-            className={`${baseButtonClasses} bg-red-600 border-red-600`}
-            onClick={stopTest}
+
+      {/* Header */}
+      <header className="px-4 md:px-6 h-16 flex items-center justify-between border-b border-neutral-700/50 bg-neutral-900/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <a
+            href="https://playit.gg"
+            className="flex items-center no-underline"
           >
-            Stop Test
-          </button>
-        ) : (
-          <button
-            className={`${baseButtonClasses} bg-orange-500 border-orange-500`}
-            onClick={() => startTest()}
-          >
-            Start Test
-          </button>
-        )}
-        {testState.type === "complete" ? (
-          <button
-            className={`${baseButtonClasses} bg-cyan-700 border-cyan-700 ml-2`}
-            onClick={() => setShowResults(true)}
-          >
-            Show Results
-          </button>
-        ) : null}
-      </div>
-      <div className="flex flex-row max-md:flex-col justify-start pt-0.5 max-h-[calc(100vh-50px)] max-md:max-h-none max-md:overflow-y-auto max-md:min-h-screen overflow-hidden box-border">
-        <div className="grow-[5] min-w-[400px] max-h-[745px]">
-          <MapChart mode={mode} />
+            <img
+              src={playitLogo}
+              alt="playit.gg"
+              className="h-10"
+            />
+          </a>
+          <span className="text-neutral-500 hidden sm:inline">|</span>
+          <span className="text-neutral-400 text-sm hidden sm:inline">
+            Latency Tester
+          </span>
         </div>
-        <div className="min-w-[250px] basis-[300px] max-md:basis-auto grow max-h-full max-md:max-h-none max-md:overflow-y-visible overflow-y-auto overflow-x-hidden">
-          {pingTargets.map((target, i) => {
-            const isActive =
-              testState.type === "running" &&
-              testState.currentTargetIndex === i;
-            const isSelected =
-              testState.type === "complete" &&
-              testState.selectedTargetIndex === i;
-            const isBest =
-              testState.type === "complete" && testState.bestTargetIndex === i;
 
-            let regionBgClass = "bg-neutral-800";
-            if (isActive) {
-              regionBgClass = "bg-amber-900";
-            } else if (isSelected) {
-              regionBgClass = "bg-indigo-900";
-            } else if (isBest) {
-              regionBgClass = "bg-green-900";
-            }
-
-            let dcName = "?";
-            const dcId = pingResults[target.id]?.dc_id;
-            if (dcId) {
-              dcName = datacenters.find((d) => d.id === dcId)?.name || "?";
-            }
-
-            const pLatency = (l?: number, l2?: number): string => {
-              if (!l) {
-                return "?";
-              }
-              if (!l2) {
-                return `${(Math.round(l * 10.0) / 10.0).toFixed(1)}ms`;
-              }
-              return `${(Math.round(l * 10.0) / 10.0).toFixed(1)}/${(Math.round(l2 * 10.0) / 10.0).toFixed(1)}ms`;
-            };
-
-            const onClick =
-              testState.type === "complete"
-                ? () => {
-                    setTestState((s: TestState): TestState => {
-                      if (s.type !== "complete") {
-                        return s;
-                      }
-                      if (s.selectedTargetIndex === i) {
-                        return {
-                          type: "complete",
-                          selectedTargetIndex: undefined,
-                          bestTargetIndex: s.bestTargetIndex,
-                        };
-                      }
-                      return {
-                        type: "complete",
-                        selectedTargetIndex: i,
-                        bestTargetIndex: s.bestTargetIndex,
-                      };
-                    });
-                  }
-                : undefined;
-
-            return (
-              <div
-                key={target.id}
-                className={`w-full float-left ${regionBgClass} mb-1 border-b-2 border-neutral-500 p-1 ${testState.type === "complete" ? "cursor-pointer" : ""}`}
-                onClick={onClick}
+        <div className="flex items-center gap-2">
+          {testState.type === "running" ? (
+            <button
+              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-lg transition-colors cursor-pointer"
+              onClick={stopTest}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <div className="font-bold">{target.name}</div>
-                <div className="text-sm">
-                  <div>
-                    <span className="font-bold text-neutral-400">
-                      Datacenter:{" "}
-                    </span>{" "}
-                    {dcName}
-                  </div>
-                  <div>
-                    <span className="font-bold text-neutral-400">
-                      Average Latency:{" "}
-                    </span>{" "}
-                    {pLatency(pingResults[target.id]?.latencyAvg)}
-                  </div>
-                  <div>
-                    <span className="font-bold text-neutral-400">
-                      Latency Range (High/Low):{" "}
-                    </span>{" "}
-                    {pLatency(
-                      pingResults[target.id]?.latencyMax,
-                      pingResults[target.id]?.latencyMin,
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Stop
+            </button>
+          ) : (
+            <button
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-medium rounded-lg transition-all cursor-pointer shadow-lg shadow-orange-500/20"
+              onClick={() => startTest()}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Start Test
+            </button>
+          )}
+          {testState.type === "complete" && (
+            <button
+              className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
+              onClick={() => setShowResults(true)}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+              Results
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-64px)]">
+        {/* Map Area */}
+        <div className="flex-1 min-h-[300px] lg:min-h-0 relative">
+          <MapChart mode={mode} />
+          {/* Map overlay with status */}
+          {testState.type === "running" && (
+            <div className="absolute top-4 left-4 bg-neutral-900/90 backdrop-blur-sm rounded-lg px-4 py-2 flex items-center gap-3 border border-neutral-700">
+              <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse"></div>
+              <span className="text-sm text-neutral-200">
+                Testing {pingTargets[testState.currentTargetIndex]?.name}...
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-full lg:w-96 bg-neutral-800/50 border-t lg:border-t-0 lg:border-l border-neutral-700/50 overflow-y-auto">
+          <div className="p-4">
+            <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-3">
+              Regions
+            </h2>
+            <div className="space-y-2">
+              {pingTargets.map((target, i) => {
+                const isActive =
+                  testState.type === "running" &&
+                  testState.currentTargetIndex === i;
+                const isSelected =
+                  testState.type === "complete" &&
+                  testState.selectedTargetIndex === i;
+                const isBest =
+                  testState.type === "complete" &&
+                  testState.bestTargetIndex === i;
+                const hasResults = !!pingResults[target.id];
+
+                let cardClasses =
+                  "bg-neutral-800/80 border-neutral-700 hover:border-neutral-600";
+                let statusDot = null;
+                let badge = null;
+
+                if (isActive) {
+                  cardClasses =
+                    "bg-gradient-to-r from-orange-950/80 to-amber-950/50 border-orange-700";
+                  statusDot = (
+                    <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                  );
+                } else if (isSelected) {
+                  cardClasses =
+                    "bg-gradient-to-r from-blue-950/80 to-indigo-950/50 border-blue-600 ring-1 ring-blue-500/30";
+                  badge = (
+                    <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded font-medium">
+                      Selected
+                    </span>
+                  );
+                } else if (isBest) {
+                  cardClasses =
+                    "bg-gradient-to-r from-green-950/80 to-emerald-950/50 border-green-700";
+                  badge = (
+                    <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded font-medium">
+                      Best
+                    </span>
+                  );
+                }
+
+                let dcName = "—";
+                const dcId = pingResults[target.id]?.dc_id;
+                if (dcId) {
+                  dcName = datacenters.find((d) => d.id === dcId)?.name || "—";
+                }
+
+                const latency = pingResults[target.id]?.latencyAvg;
+                const jitter = pingResults[target.id]?.latencyJitter;
+
+                const onClick =
+                  testState.type === "complete"
+                    ? () => {
+                        setTestState((s: TestState): TestState => {
+                          if (s.type !== "complete") {
+                            return s;
+                          }
+                          if (s.selectedTargetIndex === i) {
+                            return {
+                              type: "complete",
+                              selectedTargetIndex: undefined,
+                              bestTargetIndex: s.bestTargetIndex,
+                            };
+                          }
+                          return {
+                            type: "complete",
+                            selectedTargetIndex: i,
+                            bestTargetIndex: s.bestTargetIndex,
+                          };
+                        });
+                      }
+                    : undefined;
+
+                return (
+                  <div
+                    key={target.id}
+                    className={`rounded-lg border p-4 transition-all ${cardClasses} ${testState.type === "complete" ? "cursor-pointer" : ""}`}
+                    onClick={onClick}
+                  >
+                    {/* Card Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        {statusDot}
+                        <span className="font-semibold text-white">
+                          {target.name}
+                        </span>
+                      </div>
+                      {badge}
+                    </div>
+
+                    {/* Stats Grid */}
+                    {hasResults ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-xs text-neutral-500 mb-0.5">
+                            Latency
+                          </div>
+                          <div className="text-xl font-bold text-white">
+                            {latency ? `${Math.round(latency)}` : "—"}
+                            <span className="text-sm font-normal text-neutral-400 ml-0.5">
+                              ms
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-neutral-500 mb-0.5">
+                            Jitter
+                          </div>
+                          <div className="text-xl font-bold text-white">
+                            {jitter ? `${Math.round(jitter * 10) / 10}` : "—"}
+                            <span className="text-sm font-normal text-neutral-400 ml-0.5">
+                              ms
+                            </span>
+                          </div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-xs text-neutral-500 mb-0.5">
+                            Datacenter
+                          </div>
+                          <div className="text-sm text-neutral-300">
+                            {dcName}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-neutral-500 italic">
+                        {testState.type === "waiting"
+                          ? "Waiting for test..."
+                          : "Pending..."}
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <span className="font-bold text-neutral-400">
-                      Latency Jitter:{" "}
-                    </span>{" "}
-                    {pLatency(pingResults[target.id]?.latencyJitter)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>
