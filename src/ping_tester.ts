@@ -4,6 +4,39 @@ type Output = {
   region: string;
 };
 
+const PING_TIMEOUT_MS = 2000;
+
+/**
+ * Creates a combined abort signal that aborts on either the external signal or timeout.
+ * Uses AbortSignal.any() if available, otherwise falls back to manual combination.
+ */
+const createTimeoutSignal = (
+  signal?: AbortSignal,
+  timeoutMs = PING_TIMEOUT_MS,
+): AbortSignal => {
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  if (!signal) return timeoutSignal;
+
+  // Use AbortSignal.any() if available (modern browsers)
+  if ("any" in AbortSignal) {
+    return AbortSignal.any([signal, timeoutSignal]);
+  }
+
+  // Fallback for older browsers
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+
+  if (signal.aborted) {
+    controller.abort();
+  } else {
+    signal.addEventListener("abort", abort);
+  }
+
+  timeoutSignal.addEventListener("abort", abort);
+
+  return controller.signal;
+};
+
 export type PingResult = {
   dc: string;
   dc_id: number;
@@ -31,12 +64,13 @@ export const testPingHead = async (
   target: string,
   signal?: AbortSignal,
 ): Promise<number> => {
+  const timeoutSignal = createTimeoutSignal(signal);
   const start = performance.now();
   const response = await fetch(`${target}?s=${start}`, {
     keepalive: true,
     cache: "no-store",
     method: "HEAD",
-    signal,
+    signal: timeoutSignal,
   });
   const latency = performance.now() - start;
 
@@ -50,13 +84,14 @@ export const testPing = async (
   target: string,
   signal?: AbortSignal,
 ): Promise<PingResult> => {
+  const timeoutSignal = createTimeoutSignal(signal);
   const start = performance.now();
   let response;
   try {
     response = await fetch(`${target}?s=${start}`, {
       keepalive: true,
       cache: "no-store",
-      signal,
+      signal: timeoutSignal,
     });
   } catch (e: unknown) {
     console.log("Got error running ping test to", target, e);
@@ -158,9 +193,13 @@ export const testPings = async (
         (await testPing(target)).clientIp != initPingTest.clientIp;
       return current;
     } catch (e) {
-      // Don't retry if the request was aborted
+      // Don't retry if the request was aborted by the user (not by timeout)
       if (e instanceof DOMException && e.name === "AbortError") {
-        throw e;
+        // Only rethrow if the original signal was aborted (user cancellation)
+        // Timeouts should be retried
+        if (opts?.signal?.aborted) {
+          throw e;
+        }
       }
 
       lastError = e instanceof Error ? e : new Error(String(e));

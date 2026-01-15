@@ -6,6 +6,7 @@ import playitLogo from "./images/playit-logo.png";
 
 import { testPings, type PingSummary } from "./ping_tester";
 import TestResults from "./TestResults";
+import AllTestsFailedModal from "./AllTestsFailedModal";
 import pingTargets from "./pingTargets";
 
 type TestState =
@@ -15,7 +16,8 @@ type TestState =
       type: "complete";
       bestTargetIndex: number;
       selectedTargetIndex: number | undefined;
-    };
+    }
+  | { type: "all-failed" };
 
 function App() {
   const [userLocation, setUserLocation] = useState<
@@ -75,6 +77,13 @@ function App() {
       if (testState.type === "running" && mode.type === "ping-region") {
         return {
           ...mode,
+          location: userLocation,
+        };
+      }
+
+      if (testState.type === "all-failed") {
+        return {
+          type: "globe",
           location: userLocation,
         };
       }
@@ -181,13 +190,20 @@ function App() {
       }
     }
 
-    setTestState({
-      type: "complete",
-      selectedTargetIndex: undefined,
-      bestTargetIndex: bestIndex,
-    });
+    // If bestLatency is still 0, all tests failed
+    if (bestLatency === 0) {
+      setTestState({
+        type: "all-failed",
+      });
+    } else {
+      setTestState({
+        type: "complete",
+        selectedTargetIndex: undefined,
+        bestTargetIndex: bestIndex,
+      });
 
-    setShowResults(true);
+      setShowResults(true);
+    }
   };
 
   useEffect(() => {
@@ -208,6 +224,13 @@ function App() {
         <TestResults
           onClose={() => setShowResults(false)}
           pingResults={pingResults}
+        />
+      )}
+
+      {testState.type === "all-failed" && (
+        <AllTestsFailedModal
+          onClose={() => setTestState({ type: "waiting" })}
+          onRetry={() => startTest()}
         />
       )}
 
