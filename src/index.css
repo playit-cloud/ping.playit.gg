@@ -32,7 +32,7 @@ body,
 
 /* Retro/terminal style links */
 a {
-  @apply font-bold no-underline text-orange-500 transition-colors;
+  @apply font-bold no-underline text-orange-500;
 }
 
 a:hover {
@@ -89,7 +89,6 @@ a:hover {
   text-decoration: none;
   border: 3px solid #0a0e1a;
   outline: 3px solid var(--border-accent);
-  transition: all 0.15s ease;
 }
 
 .btn-retro-cta:hover {

@@ -73,7 +73,7 @@ export default function TestResults({ onClose, pingResults }: Props) {
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 hover:bg-red-600 border-2 hover:border-red-400 text-zinc-200 hover:text-white font-pixel text-[10px] cursor-pointer transition-colors"
+            className="px-4 py-1.5 hover:bg-red-600 border-2 hover:border-red-400 text-zinc-200 hover:text-white font-pixel text-[10px] cursor-pointer"
             style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}
           >
             [ESC]

@@ -227,14 +227,14 @@ function App() {
         <div className="flex items-center gap-3">
           {testState.type === "running" ? (
             <button
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-500 border-2 border-red-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-red-600 hover:bg-red-500 border-2 border-red-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
               onClick={stopTest}
             >
               [X] STOP
             </button>
           ) : (
             <button
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-600 hover:bg-orange-500 border-2 border-orange-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
               onClick={() => startTest()}
             >
               [▶] RUN TEST
@@ -242,7 +242,7 @@ function App() {
           )}
           {testState.type === "complete" && (
             <button
-              className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 border-2 border-cyan-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 border-2 border-cyan-400 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
               onClick={() => setShowResults(true)}
             >
               [◆] RESULTS
@@ -368,7 +368,7 @@ function App() {
                 return (
                   <div
                     key={target.id}
-                    className={`border p-3 transition-all ${cardClasses} ${testState.type === "complete" ? "cursor-pointer hover:brightness-110" : ""}`}
+                    className={`border p-3 ${cardClasses} ${testState.type === "complete" ? "cursor-pointer hover:brightness-110" : ""}`}
                     style={cardStyle}
                     onClick={onClick}
                   >
