@@ -1,4 +1,5 @@
 export type PingTarget = { id: string; name: string; target: string };
+
 const pingTargets: PingTarget[] = [
   {
     id: "GlobalAnycast",
@@ -61,4 +62,5 @@ const pingTargets: PingTarget[] = [
     target: "//aus.rt.playit.gg",
   },
 ];
+
 export default pingTargets;
