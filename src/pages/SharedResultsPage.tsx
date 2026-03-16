@@ -23,15 +23,17 @@ export default function SharedResultsPage() {
     displayLocation: sharedUserLocation ?? userLocation,
   });
   const sharing = useShareLinkState({
-    getPayload: () =>
-      pingSession.testState.type === "complete"
-        ? {
-            pingResults: pingSession.pingResults,
-            bestTargetIndex: pingSession.testState.bestTargetIndex,
-            selectedTargetIndex: pingSession.testState.selectedTargetIndex,
-            userLocation: sharedUserLocation ?? userLocation,
-          }
-        : null,
+    getPayload: () => {
+      if (pingSession.testState.type !== "complete") return null;
+      const firstResult = Object.values(pingSession.pingResults)[0];
+      return {
+        clientIp: firstResult?.clientIp,
+        pingResults: pingSession.pingResults,
+        bestTargetIndex: pingSession.testState.bestTargetIndex,
+        selectedTargetIndex: pingSession.testState.selectedTargetIndex,
+        userLocation: sharedUserLocation ?? userLocation,
+      };
+    },
   });
   const sharedSnapshot = useSharedSnapshot(shareId);
   const { applySnapshot, setShowResults } = pingSession;

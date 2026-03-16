@@ -74,7 +74,7 @@ const isPingSummary = (value: unknown) => {
     isInteger(summary.dc_id) &&
     typeof summary.region === "string" &&
     typeof summary.serverIp === "string" &&
-    typeof summary.clientIp === "string" &&
+    (summary.clientIp === undefined || typeof summary.clientIp === "string") &&
     isFiniteNumber(summary.latencyMax) &&
     isFiniteNumber(summary.latencyMin) &&
     isFiniteNumber(summary.latencyAvg) &&
@@ -130,7 +130,11 @@ const normalizeCreateShareRequest = (
     return null;
   }
 
+  const clientIp =
+    typeof payload.clientIp === "string" ? payload.clientIp : undefined;
+
   return {
+    clientIp,
     pingResults,
     bestTargetIndex: payload.bestTargetIndex,
     selectedTargetIndex: payload.selectedTargetIndex,
@@ -159,9 +163,13 @@ const normalizeStoredSnapshot = (value: unknown): ShareSnapshot | null => {
     return null;
   }
 
+  const clientIp =
+    typeof snapshot.clientIp === "string" ? snapshot.clientIp : undefined;
+
   return {
     version: snapshot.version,
     createdAt: snapshot.createdAt,
+    clientIp,
     pingResults,
     bestTargetIndex: snapshot.bestTargetIndex,
     selectedTargetIndex: snapshot.selectedTargetIndex,
@@ -198,11 +206,22 @@ const handleCreateShare = async (request: Request, env: Env) => {
     return createErrorResponse("Invalid share payload.", 400);
   }
 
+  let clientIp = payload.clientIp;
+  const strippedResults: PingResults = {};
+  for (const [key, summary] of Object.entries(payload.pingResults)) {
+    if (!clientIp && summary.clientIp) {
+      clientIp = summary.clientIp;
+    }
+    const { clientIp: _stripped, ...rest } = summary;
+    strippedResults[key] = rest;
+  }
+
   const shareId = createShareId();
   const snapshot: ShareSnapshot = {
     version: 1,
     createdAt: new Date().toISOString(),
-    pingResults: payload.pingResults,
+    clientIp,
+    pingResults: strippedResults,
     bestTargetIndex: payload.bestTargetIndex,
     selectedTargetIndex: payload.selectedTargetIndex,
     userLocation: payload.userLocation,
@@ -239,7 +258,8 @@ const handleGetShare = async (shareId: string, env: Env) => {
     return createErrorResponse("Stored share payload is invalid.", 500);
   }
 
-  return createJsonResponse(parsed);
+  const { clientIp: _ip, userLocation: _loc, ...publicSnapshot } = parsed;
+  return createJsonResponse(publicSnapshot);
 };
 
 export default {

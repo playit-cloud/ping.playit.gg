@@ -15,15 +15,17 @@ export default function LatencyTesterPage() {
   });
 
   const sharing = useShareLinkState({
-    getPayload: () =>
-      pingSession.testState.type === "complete"
-        ? {
-            pingResults: pingSession.pingResults,
-            bestTargetIndex: pingSession.testState.bestTargetIndex,
-            selectedTargetIndex: pingSession.testState.selectedTargetIndex,
-            userLocation,
-          }
-        : null,
+    getPayload: () => {
+      if (pingSession.testState.type !== "complete") return null;
+      const firstResult = Object.values(pingSession.pingResults)[0];
+      return {
+        clientIp: firstResult?.clientIp,
+        pingResults: pingSession.pingResults,
+        bestTargetIndex: pingSession.testState.bestTargetIndex,
+        selectedTargetIndex: pingSession.testState.selectedTargetIndex,
+        userLocation,
+      };
+    },
   });
 
   useEffect(() => {

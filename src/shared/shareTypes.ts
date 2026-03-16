@@ -3,7 +3,7 @@ export type PingSummary = {
   dc_id: number;
   region: string;
   serverIp: string;
-  clientIp: string;
+  clientIp?: string;
   latencyMax: number;
   latencyMin: number;
   latencyAvg: number;
@@ -17,6 +17,7 @@ export type PingResults = Record<string, PingSummary>;
 export type ShareSnapshot = {
   version: number;
   createdAt: string;
+  clientIp?: string;
   pingResults: PingResults;
   bestTargetIndex?: number;
   selectedTargetIndex?: number;
@@ -24,6 +25,7 @@ export type ShareSnapshot = {
 };
 
 export type CreateShareRequest = {
+  clientIp?: string;
   pingResults: PingResults;
   bestTargetIndex?: number;
   selectedTargetIndex?: number;
