@@ -6,20 +6,11 @@ export type DcInfo = {
 };
 
 const dcs: DcInfo[] = [
-  { id: 0, region: "GlobalAnycast", name: "SameDc", location: [0, 0] },
-  { id: 8, region: "GlobalAnycast", name: "SeattleStage1", location: [0, 0] },
-  { id: 9, region: "GlobalAnycast", name: "SingaporeStage1", location: [0, 0] },
   {
     id: 11,
     region: "Sweden",
     name: "Stockholm2",
     location: [18.048653388695985, 59.33657399619439],
-  },
-  {
-    id: 14,
-    region: "GlobalAnycast",
-    name: "FrankfurtStage1",
-    location: [0, 0],
   },
   {
     id: 16,
