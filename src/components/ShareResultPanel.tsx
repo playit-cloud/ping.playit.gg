@@ -49,15 +49,17 @@ export default function ShareResultPanel({
             </div>
           )}
         </div>
-        <button
-          onClick={onShare}
-          disabled={
-            shareState.status === "saving" || shareState.status === "loading"
-          }
-          className="px-4 py-3 border-2 border-cyan-500 bg-cyan-700 hover:bg-cyan-600 disabled:cursor-wait disabled:opacity-60 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
-        >
-          {getShareButtonLabel(shareState)}
-        </button>
+        {shareState.status !== "ready" && (
+          <button
+            onClick={onShare}
+            disabled={
+              shareState.status === "saving" || shareState.status === "loading"
+            }
+            className="px-4 py-3 border-2 border-cyan-500 bg-cyan-700 hover:bg-cyan-600 disabled:cursor-wait disabled:opacity-60 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
+          >
+            {getShareButtonLabel(shareState)}
+          </button>
+        )}
       </div>
       {shareState.status === "ready" && (
         <div
@@ -67,12 +69,18 @@ export default function ShareResultPanel({
           <div className="font-pixel text-[8px] uppercase tracking-widest text-cyan-300">
             {shareState.source === "loaded"
               ? "Loaded from share link"
-              : shareState.copied
-                ? "Share link copied"
-                : "Share link ready"}
+              : "Share link ready"}
           </div>
-          <div className="mt-2 break-all text-sm font-mono text-cyan-100">
-            {shareState.url}
+          <div className="mt-2 flex items-center gap-3">
+            <div className="break-all text-sm font-mono text-cyan-100 flex-1">
+              {shareState.url}
+            </div>
+            <button
+              onClick={onShare}
+              className="shrink-0 px-4 py-2 border-2 border-cyan-500 bg-cyan-700 hover:bg-cyan-600 text-white font-pixel text-[10px] uppercase tracking-wide cursor-pointer"
+            >
+              {shareState.copied ? "[OK] COPIED" : "[#] COPY LINK"}
+            </button>
           </div>
         </div>
       )}

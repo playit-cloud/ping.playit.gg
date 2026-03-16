@@ -40,6 +40,35 @@ export function useShareLinkState({ getPayload }: UseShareLinkStateOptions) {
     setShareState({ status: "idle" });
   }, []);
 
+  const saveShare = useCallback(async () => {
+    if (shareState.status === "ready" || shareState.status === "saving") {
+      return;
+    }
+
+    const payload = getPayload();
+    if (!payload) {
+      return;
+    }
+
+    setShareState({ status: "saving" });
+
+    try {
+      const response = await createShare(payload);
+      setShareState({
+        status: "ready",
+        url: response.shareUrl,
+        source: "created",
+        copied: false,
+      });
+    } catch (error) {
+      setShareState({
+        status: "error",
+        message:
+          error instanceof Error ? error.message : "Failed to create share link.",
+      });
+    }
+  }, [getPayload, shareState]);
+
   const handleShare = useCallback(async () => {
     if (shareState.status === "ready") {
       const copied = await copyShareUrl(shareState.url);
@@ -77,6 +106,7 @@ export function useShareLinkState({ getPayload }: UseShareLinkStateOptions) {
 
   return {
     shareState,
+    saveShare,
     handleShare,
     markLoadedShare,
     setShareError,

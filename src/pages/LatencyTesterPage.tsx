@@ -29,6 +29,14 @@ export default function LatencyTesterPage() {
   });
 
   useEffect(() => {
+    if (pingSession.testState.type === "complete") {
+      void sharing.saveShare();
+    } else if (pingSession.testState.type === "running") {
+      sharing.resetShareState();
+    }
+  }, [pingSession.testState.type]);
+
+  useEffect(() => {
     if (error) {
       alert(error);
     }
