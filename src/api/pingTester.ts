@@ -1,3 +1,5 @@
+import type { PingSummary } from "@/shared/shareTypes";
+
 type Output = {
   dc: string;
   dc_id: number;
@@ -6,10 +8,6 @@ type Output = {
 
 const PING_TIMEOUT_MS = 2000;
 
-/**
- * Creates a combined abort signal that aborts on either the external signal or timeout.
- * Uses AbortSignal.any() if available, otherwise falls back to manual combination.
- */
 const createTimeoutSignal = (
   signal?: AbortSignal,
   timeoutMs = PING_TIMEOUT_MS,
@@ -17,12 +15,10 @@ const createTimeoutSignal = (
   const timeoutSignal = AbortSignal.timeout(timeoutMs);
   if (!signal) return timeoutSignal;
 
-  // Use AbortSignal.any() if available (modern browsers)
   if ("any" in AbortSignal) {
     return AbortSignal.any([signal, timeoutSignal]);
   }
 
-  // Fallback for older browsers
   const controller = new AbortController();
   const abort = () => controller.abort();
 
@@ -44,20 +40,6 @@ export type PingResult = {
   latency: number;
   serverIp: string;
   clientIp: string;
-};
-
-export type PingSummary = {
-  dc: string;
-  dc_id: number;
-  region: string;
-  serverIp: string;
-  clientIp: string;
-  latencyMax: number;
-  latencyMin: number;
-  latencyAvg: number;
-  latencyJitter: number;
-  clientIpChanged: boolean;
-  error?: string; // Error message if ping failed after retries
 };
 
 export const testPingHead = async (
@@ -93,9 +75,9 @@ export const testPing = async (
       cache: "no-store",
       signal: timeoutSignal,
     });
-  } catch (e: unknown) {
-    console.log("Got error running ping test to", target, e);
-    throw e;
+  } catch (error: unknown) {
+    console.log("Got error running ping test to", target, error);
+    throw error;
   }
 
   const latency = performance.now() - start;
@@ -135,9 +117,7 @@ export const testPings = async (
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const initPingTest = await testPing(target, opts?.signal);
-
       const latencies: number[] = [];
-
       const testTime = 1000;
       const testStart = Date.now();
       const maxPings = 100000;
@@ -158,25 +138,21 @@ export const testPings = async (
 
       for (let i = 0; i < maxPings; i++) {
         latencies.push(await testPingHead(target, opts?.signal));
+        latencies.sort((a, b) => a - b);
+        const use = latencies.slice(0, Math.max(20, latencies.length / 2));
 
-        /* update current */
-        {
-          latencies.sort((a, b) => a - b);
-          const use = latencies.slice(0, Math.max(20, latencies.length / 2));
+        current.latencyMax = Math.max(...use);
+        current.latencyMin = Math.min(...use);
+        current.latencyAvg =
+          use.reduce((sum, latency) => sum + latency, 0) / use.length;
+        current.latencyJitter = Math.sqrt(
+          use.reduce(
+            (sum, latency) => sum + Math.pow(latency - current.latencyAvg, 2),
+            0,
+          ) / use.length,
+        );
 
-          current.latencyMax = Math.max(...use);
-          current.latencyMin = Math.min(...use);
-          current.latencyAvg =
-            use.reduce((sum, latency) => sum + latency, 0) / use.length;
-          current.latencyJitter = Math.sqrt(
-            use.reduce(
-              (sum, latency) => sum + Math.pow(latency - current.latencyAvg, 2),
-              0,
-            ) / use.length,
-          );
-
-          opts?.onUpdate?.(current);
-        }
+        opts?.onUpdate?.(current);
 
         const age = Date.now() - testStart;
 
@@ -192,29 +168,25 @@ export const testPings = async (
       current.clientIpChanged =
         (await testPing(target)).clientIp != initPingTest.clientIp;
       return current;
-    } catch (e) {
-      // Don't retry if the request was aborted by the user (not by timeout)
-      if (e instanceof DOMException && e.name === "AbortError") {
-        // Only rethrow if the original signal was aborted (user cancellation)
-        // Timeouts should be retried
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
         if (opts?.signal?.aborted) {
-          throw e;
+          throw error;
         }
       }
 
-      lastError = e instanceof Error ? e : new Error(String(e));
+      lastError = error instanceof Error ? error : new Error(String(error));
       console.log(
         `Ping attempt ${attempt + 1}/${MAX_RETRIES + 1} failed for ${target}:`,
         lastError.message,
       );
 
       if (attempt < MAX_RETRIES) {
-        await new Promise((r) => setTimeout(r, 500)); // Brief delay before retry
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
   }
 
-  // All retries failed - return failure state
   return {
     dc: "",
     dc_id: 0,

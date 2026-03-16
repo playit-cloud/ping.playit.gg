@@ -6,7 +6,6 @@ type Props = {
 };
 
 export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
-  // Close modal on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && onClose) {
@@ -29,7 +28,6 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
         style={{ backgroundColor: "var(--bg-secondary)" }}
         onClick={(evt) => evt.stopPropagation()}
       >
-        {/* Header */}
         <div
           className="px-5 py-4 border-b-2 flex items-center justify-between"
           style={{
@@ -60,9 +58,7 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-5 space-y-5">
-          {/* Error Message */}
           <div className="bg-red-950/50 border-2 border-red-600 p-5">
             <div className="flex items-center gap-3 mb-3">
               <span className="text-red-400 text-2xl">X</span>
@@ -71,13 +67,12 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
               </span>
             </div>
             <p className="text-zinc-300 font-sans text-sm m-0 leading-relaxed">
-              We were unable to reach any of the playit.gg servers. This could
-              be due to network issues, firewall restrictions, or temporary
-              server unavailability.
+              We were unable to reach any of the playit.gg servers. This could be
+              due to network issues, firewall restrictions, or temporary server
+              unavailability.
             </p>
           </div>
 
-          {/* Troubleshooting */}
           <div
             className="border-2 p-5"
             style={{
@@ -97,7 +92,6 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
             </ul>
           </div>
 
-          {/* Discord Support */}
           <div
             className="border-2 p-5"
             style={{
@@ -122,7 +116,6 @@ export default function AllTestsFailedModal({ onClose, onRetry }: Props) {
             </a>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             <button
               onClick={onRetry}

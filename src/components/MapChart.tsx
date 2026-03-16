@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -6,11 +7,8 @@ import {
   Marker,
   type ProjectionConfig,
 } from "react-simple-maps";
-
 import { darken, lighten, mix } from "polished";
-
-import datacenters from "./pingDcs";
-import { useEffect, useMemo, useRef, useState } from "react";
+import datacenters from "@/shared/pingDcs";
 
 const geoUrl = "/features.json";
 
@@ -65,29 +63,18 @@ function lerpProjectionConfig(
   };
 }
 
-// Utility to generate a projection config that ensures two GPS points are within view
-// Accepts two [lon, lat] points and returns a projectionConfig for geoAzimuthalEqualArea
 function getProjectionConfigForPoints(
   pointA: [number, number],
   pointB: [number, number],
 ): ProjectionConfig {
-  // Calculate the midpoint
   const midLon = (pointA[0] + pointB[0]) / 2;
   const midLat = (pointA[1] + pointB[1]) / 2;
-
-  // Calculate the distance between the points (roughly, in degrees)
   const dLon = Math.abs(pointA[0] - pointB[0]);
   const dLat = Math.abs(pointA[1] - pointB[1]);
-  // Use the larger of the two for scale calculation
   const maxSpan = Math.max(dLon, dLat);
-
-  // Heuristic: scale inversely proportional to the span, with a base scale
-  // These numbers may need tuning for your map size and projection
   const baseScale = 1100;
   const scale = Math.max(300, baseScale * (60 / (maxSpan + 1))) * 0.3;
 
-  // To keep the equator horizontal, set the second value of rotate (latitude) to 0
-  // Set center to the midpoint to ensure both points are centered
   return {
     rotate: [-midLon, 0, 0],
     center: [0, midLat],
@@ -95,122 +82,101 @@ function getProjectionConfigForPoints(
   };
 }
 
-// List of European country geo IDs (ISO A3 codes)
 const europeGeoIds = [
-  "ALB", // Albania
-  "AND", // Andorra
-  "AUT", // Austria
-  "BLR", // Belarus
-  "BEL", // Belgium
-  "BIH", // Bosnia and Herzegovina
-  "BGR", // Bulgaria
-  "HRV", // Croatia
-  "CYP", // Cyprus
-  "CZE", // Czechia
-  "DNK", // Denmark
-  "EST", // Estonia
-  "FIN", // Finland
-  "FRA", // France
-  "DEU", // Germany
-  "GRC", // Greece
-  "HUN", // Hungary
-  "IRL", // Ireland
-  "ITA", // Italy
-  "LVA", // Latvia
-  "LIE", // Liechtenstein
-  "LTU", // Lithuania
-  "LUX", // Luxembourg
-  "MLT", // Malta
-  "MDA", // Moldova
-  "MCO", // Monaco
-  "MNE", // Montenegro
-  "NLD", // Netherlands
-  "MKD", // North Macedonia
-  "NOR", // Norway
-  "POL", // Poland
-  "PRT", // Portugal
-  "ROU", // Romania
-  "SMR", // San Marino
-  "SRB", // Serbia
-  "SVK", // Slovakia
-  "SVN", // Slovenia
-  "ESP", // Spain
-  "SWE", // Sweden
-  "CHE", // Switzerland
-  "UKR", // Ukraine
-  "GBR", // United Kingdom
-  "VAT", // Vatican City
+  "ALB",
+  "AND",
+  "AUT",
+  "BLR",
+  "BEL",
+  "BIH",
+  "BGR",
+  "HRV",
+  "CYP",
+  "CZE",
+  "DNK",
+  "EST",
+  "FIN",
+  "FRA",
+  "DEU",
+  "GRC",
+  "HUN",
+  "IRL",
+  "ITA",
+  "LVA",
+  "LIE",
+  "LTU",
+  "LUX",
+  "MLT",
+  "MDA",
+  "MCO",
+  "MNE",
+  "NLD",
+  "MKD",
+  "NOR",
+  "POL",
+  "PRT",
+  "ROU",
+  "SMR",
+  "SRB",
+  "SVK",
+  "SVN",
+  "ESP",
+  "SWE",
+  "CHE",
+  "UKR",
+  "GBR",
+  "VAT",
 ];
 
-// North America geo IDs
-const northAmericaGeoIds = [
-  "USA", // United States
-  "CAN", // Canada
-  "MEX", // Mexico
-];
+const northAmericaGeoIds = ["USA", "CAN", "MEX"];
 
 const latinAmericaGeoIds = [
-  //   "DOM", // Dominican Republic
-  //   "HND", // Honduras
-  //   "NIC", // Nicaragua
-  //   "SLV", // El Salvador
-  //   "GTM", // Guatemala
-  //   "PAN", // Panama
-  //   "CRI", // Costa Rica
-  //   "CUB", // Cuba
-
-  "ARG", // Argentina
-  "BOL", // Bolivia
-  "BRA", // Brazil
-  "CHL", // Chile
-  "COL", // Colombia
-  "ECU", // Ecuador
-  "PRY", // Paraguay
-  "PER", // Peru
-  "URY", // Uruguay
-  "VEN", // Venezuela
-  "GUY", // Guyana
-  "SUR", // Suriname
-  "GUF", // French Guiana
+  "ARG",
+  "BOL",
+  "BRA",
+  "CHL",
+  "COL",
+  "ECU",
+  "PRY",
+  "PER",
+  "URY",
+  "VEN",
+  "GUY",
+  "SUR",
+  "GUF",
 ];
 
-const indiaGeoIds = [
-  "IND", // India
-  "BGD", // Bangladesh
-];
+const indiaGeoIds = ["IND", "BGD"];
 
 const asiaGeoIds = [
-  "JPN", // Japan
-  "KOR", // South Korea
-  "AUS", // Australia
-  "NZL", // New Zealand
-  "IDN", // Indonesia
-  "PHL", // Philippines
-  "THA", // Thailand
-  "VNM", // Vietnam
-  "MYS", // Malaysia
-  "SGP", // Singapore
-  "PNG", // Papua New Guinea
+  "JPN",
+  "KOR",
+  "AUS",
+  "NZL",
+  "IDN",
+  "PHL",
+  "THA",
+  "VNM",
+  "MYS",
+  "SGP",
+  "PNG",
 ];
 
-// Retro gaming color palette - darker, more saturated
-const orangeColor = "#f97316"; // Orange for North America
-const blueColor = "#0ea5e9"; // Sky blue for Europe
-const magentaColor = "#d946ef"; // Fuchsia for India
-const darkColor = "#0a0e1a"; // Deep navy for background
-const greenColor = "#10b981"; // Emerald for Asia
-const redColor = "#ef4444"; // Red for South America
+const orangeColor = "#f97316";
+const blueColor = "#0ea5e9";
+const magentaColor = "#d946ef";
+const darkColor = "#0a0e1a";
+const greenColor = "#10b981";
+const redColor = "#ef4444";
 
-// Muted versions for country fills (darker, less saturated)
 const regionColors: Record<string, string> = {
-  europe: "#1e3a5f", // Dark blue
-  "north-america": "#4a2c17", // Dark orange/brown
-  "south-america": "#4a1c1c", // Dark red
-  india: "#3d1f4a", // Dark purple
-  asia: "#1a3d32", // Dark green
+  europe: "#1e3a5f",
+  "north-america": "#4a2c17",
+  "south-america": "#4a1c1c",
+  india: "#3d1f4a",
+  asia: "#1a3d32",
 };
 
-// Bright accent colors for borders and highlights
 const regionAccentColors: Record<string, string> = {
   europe: blueColor,
   "north-america": orangeColor,
@@ -246,14 +212,14 @@ function easeInOutCirc(x: number): number {
     : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
 }
 
-const MapChart = ({ mode }: { mode: Mode }) => {
+export default function MapChart({ mode }: { mode: Mode }) {
   const points = [[0, 0] as [number, number], [0, 0] as [number, number]];
 
   if (mode.type === "ping-region") {
     points[0][0] = mode.location[0];
     points[0][1] = mode.location[1];
 
-    const dc = datacenters.find((dc) => dc.id === mode.target.dc_id);
+    const dc = datacenters.find((value) => value.id === mode.target.dc_id);
     if (dc) {
       points[1][0] = dc.location[0];
       points[1][1] = dc.location[1];
@@ -265,7 +231,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
 
     if (mode.type === "globe") {
       if (mode.highlightedDcd) {
-        const dc = datacenters.find((d) => d.id === mode.highlightedDcd);
+        const dc = datacenters.find((value) => value.id === mode.highlightedDcd);
         if (dc) {
           return getProjectionConfigForPoints(
             [mode.location[0], mode.location[1]],
@@ -275,7 +241,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
       }
       singleGps = [mode.location[0], mode.location[1]];
     } else if (mode.type === "dc-focus") {
-      const dc = datacenters.find((dc) => dc.id === mode.dcId);
+      const dc = datacenters.find((value) => value.id === mode.dcId);
       singleGps = dc?.location as [number, number] | undefined;
     }
 
@@ -283,7 +249,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
       return {
         rotate: [0.0 - singleGps[0], 0.0, 0.0],
         center: [0, singleGps[1]],
-        scale: 1100 * 0.5, // Adjust scale for globe view
+        scale: 1100 * 0.5,
       } as ProjectionConfig;
     }
 
@@ -317,7 +283,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
     }
 
     projectionStartRef.current = projection;
-
     const animationDuration = 0.25;
 
     let tid: number;
@@ -331,7 +296,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
       }
 
       const elapsed = msTime - start;
-
       const t = Math.min(1.0, (elapsed * 0.001) / animationDuration);
       setProjection(
         lerpProjectionConfig(
@@ -349,7 +313,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
     return () => cancelAnimationFrame(tid);
   }, [targetProjection]);
 
-  // Determine the active region for highlighting
   const activeRegion = mode.type === "ping-region" ? mode.target.region : null;
 
   return (
@@ -360,7 +323,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
       height={600}
       style={{ backgroundColor: "#0a0e1a", width: "100%", height: "100%" }}
     >
-      {/* Grid pattern definition for non-region countries */}
       <defs>
         <pattern
           id="grid"
@@ -382,7 +344,7 @@ const MapChart = ({ mode }: { mode: Mode }) => {
         stroke="#1e2a45"
         strokeWidth={0.5}
       >
-        {({ geographies, projection }) => (
+        {({ geographies, projection: projectionFn }) => (
           <>
             {geographies.map((geo) => {
               const europe = europeGeoIds.indexOf(geo.id) !== -1;
@@ -404,24 +366,20 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                 region = "asia";
               }
 
-                // Default: dark with grid pattern for non-region countries
-                let fillColor = "#0f1629";
-                let strokeColor = "#1e2a45";
+              let fillColor = "#0f1629";
+              let strokeColor = "#1e2a45";
 
-                if (region) {
-                  // Use muted fill colors for regions
-                  fillColor = regionColors[region];
-                  strokeColor = regionAccentColors[region];
+              if (region) {
+                fillColor = regionColors[region];
+                strokeColor = regionAccentColors[region];
 
-                  // If we're pinging and this isn't the active region, dim it
-                  if (activeRegion && activeRegion !== region) {
-                    fillColor = mix(0.7, fillColor, "#0a0e1a");
-                    strokeColor = "#1e2a45";
-                  } else if (activeRegion === region) {
-                    // Brighten the active region slightly
-                    fillColor = lighten(0.05, fillColor);
-                  }
+                if (activeRegion && activeRegion !== region) {
+                  fillColor = mix(0.7, fillColor, "#0a0e1a");
+                  strokeColor = "#1e2a45";
+                } else if (activeRegion === region) {
+                  fillColor = lighten(0.05, fillColor);
                 }
+              }
 
               return (
                 <Geography
@@ -434,17 +392,14 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               );
             })}
 
-            {/* Connection line with neon glow effect */}
             {mode.type !== "globe" && (
               <>
-                {/* Glow layer */}
                 <Line
                   coordinates={points}
                   stroke={orangeColor}
                   strokeWidth={6}
                   strokeOpacity={0.3}
                 />
-                {/* Main line */}
                 <Line
                   coordinates={points}
                   stroke={orangeColor}
@@ -454,12 +409,10 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               </>
             )}
 
-            {/* Datacenter markers */}
             {datacenters.map((dc) => {
-              const projected = projection(dc.location as [number, number]);
+              const projected = projectionFn(dc.location as [number, number]);
               if (!projected) return null;
 
-              // Get the accent color for this DC's region
               let accentColor = regionAccentColors[dc.region] || "#71717a";
 
               const focusId =
@@ -478,7 +431,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               const [cx, cy] = projected;
               return (
                 <g key={dc.name}>
-                  {/* Outer glow for focused DC */}
                   {isFocused && (
                     <circle
                       cx={cx}
@@ -490,7 +442,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                       strokeOpacity={0.4}
                     />
                   )}
-                  {/* DC marker - square for retro feel */}
                   <rect
                     x={cx - 4}
                     y={cy - 4}
@@ -499,7 +450,10 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                     fill={darken(0.2, accentColor)}
                     stroke={isFocused ? "#fff" : lighten(0.2, accentColor)}
                     strokeWidth={isFocused ? 2 : 1}
-                    style={{ transform: `rotate(45deg)`, transformOrigin: `${cx}px ${cy}px` }}
+                    style={{
+                      transform: "rotate(45deg)",
+                      transformOrigin: `${cx}px ${cy}px`,
+                    }}
                   >
                     <title>{dc.name}</title>
                   </rect>
@@ -507,10 +461,8 @@ const MapChart = ({ mode }: { mode: Mode }) => {
               );
             })}
 
-            {/* User location marker */}
             {(mode.type === "globe" || mode.type === "ping-region") && (
               <Marker coordinates={mode.location}>
-                {/* Pulsing ring effect */}
                 <circle
                   r={20}
                   fill="none"
@@ -533,7 +485,6 @@ const MapChart = ({ mode }: { mode: Mode }) => {
                     repeatCount="indefinite"
                   />
                 </circle>
-                {/* Inner marker */}
                 <circle
                   r={8}
                   fill={darkColor}
@@ -548,6 +499,4 @@ const MapChart = ({ mode }: { mode: Mode }) => {
       </Geographies>
     </ComposableMap>
   );
-};
-
-export default MapChart;
+}

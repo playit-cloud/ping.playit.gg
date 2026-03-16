@@ -4,6 +4,7 @@ export type DcInfo = {
   name: string;
   location: [number, number];
 };
+
 const dcs: DcInfo[] = [
   { id: 0, region: "GlobalAnycast", name: "SameDc", location: [0, 0] },
   { id: 8, region: "GlobalAnycast", name: "SeattleStage1", location: [0, 0] },
@@ -153,4 +154,5 @@ const dcs: DcInfo[] = [
     location: [-87.6687977076936, 41.86024599381382],
   },
 ];
+
 export default dcs;
