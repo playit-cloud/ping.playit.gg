@@ -1,4 +1,4 @@
-name = "ping-playit-gg"
+name = "playit-ping-web"
 main = "worker/index.ts"
 compatibility_date = "2026-03-16"
 workers_dev = true
