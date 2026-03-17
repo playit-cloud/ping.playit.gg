@@ -299,7 +299,7 @@ export default function TestResultsModal({
                     </div>
                   </div>
                   <a
-                    href="https://playit.gg/account/billing/shop/premium"
+                    href="https://playit.gg/account/upgrade?ref=ping"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-retro-cta blink-cursor"
