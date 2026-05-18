@@ -54,18 +54,18 @@ const dcs: DcInfo[] = [
     name: "Mumbai2",
     location: [72.88666880079465, 19.107503578348634],
   },
-  {
-    id: 32,
-    region: "India",
-    name: "Bangalore1",
-    location: [77.61376959586156, 12.975468026994934],
-  },
-  {
-    id: 33,
-    region: "India",
-    name: "Delhi1",
-    location: [77.15672933005733, 28.66015590873483],
-  },
+//  {
+//    id: 32,
+//    region: "India",
+//    name: "Bangalore1",
+//    location: [77.61376959586156, 12.975468026994934],
+//  },
+//  {
+//    id: 33,
+//    region: "India",
+//    name: "Delhi1",
+//    location: [77.15672933005733, 28.66015590873483],
+//  },
   {
     id: 34,
     region: "Chile",
