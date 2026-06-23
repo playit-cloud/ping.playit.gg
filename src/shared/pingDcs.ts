@@ -7,6 +7,12 @@ export type DcInfo = {
 
 const dcs: DcInfo[] = [
   {
+    id: 2,
+    region: "LosAngelesCalifornia",
+    name: "FremontCa",
+    location: [-121.99658751843674, 37.53454120057065],
+  },
+  {
     id: 11,
     region: "Sweden",
     name: "Stockholm2",
