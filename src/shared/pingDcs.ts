@@ -13,6 +13,12 @@ const dcs: DcInfo[] = [
     location: [-121.99658751843674, 37.53454120057065],
   },
   {
+    id: 7,
+    region: "Atlanta",
+    name: "Atlanta",
+    location: [-84.39405475902451, 33.75179754898716],
+  },
+  {
     id: 11,
     region: "Sweden",
     name: "Stockholm2",

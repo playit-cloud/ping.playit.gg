@@ -47,6 +47,7 @@ const pingTargets: PingTarget[] = [
   },
   { id: "NewYork", name: "NewYork", target: "//nyc.rt.playit.gg" },
   { id: "Miami", name: "Miami", target: "//mia.rt.playit.gg" },
+  { id: "Atlanta", name: "Atlanta", target: "//atl.rt.playit.gg" },
   {
     id: "UnitedKingdom",
     name: "UnitedKingdom",
